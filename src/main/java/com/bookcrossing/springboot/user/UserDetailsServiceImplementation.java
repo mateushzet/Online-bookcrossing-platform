@@ -12,12 +12,12 @@ import java.util.List;
 
 
 @Service
-public class UserServiceImplementation implements UserDetailsService {
+public class UserDetailsServiceImplementation implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
 
-    public UserServiceImplementation(UserRepository userRepository) {
+    public UserDetailsServiceImplementation(UserRepository userRepository) {
         this.userRepository=userRepository;
     }
 
