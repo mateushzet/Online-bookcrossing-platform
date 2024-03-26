@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate} from 'react-router-dom';
 
-function Dashboard({ username }) {
+function HomePage({ username }) {
     const history = useNavigate();
 
     const handleLogout = () => {
@@ -23,4 +23,4 @@ function Dashboard({ username }) {
     );
 }
 
-export default Dashboard;
+export default HomePage;

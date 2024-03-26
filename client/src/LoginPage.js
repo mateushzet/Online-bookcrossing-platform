@@ -23,7 +23,7 @@ function LoginPage() {
             const response = await axios.post('http://localhost:8080/auth/signin', { username, password });
             console.log('Login successful:', response.data);
             localStorage.setItem('token', response.data.jwt);
-            history('/dashboard');
+            history('/homepage');
         } catch (error) {
             console.error('Login failed:', error.response ? error.response.data : error.message);
             setError('Invalid username or password.');
