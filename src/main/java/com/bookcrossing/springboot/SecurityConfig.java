@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
-public class ApplicatonConfig {
+public class SecurityConfig {
 
     @SuppressWarnings("deprecation")
     @Bean

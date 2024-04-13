@@ -1,13 +1,144 @@
-body {
+/* Base setup */
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background-color: #f0fbff; /* Soft blue background, like a gentle sky */
+  color: #5b7a91; /* Soft dark blue for text */
+  line-height: 1.6;
+}
+
+/* Styling for headers */
+h1, h2, h3, h4, h5, h6 {
+  color: #327a8d; /* Oceanic teal for headings */
+}
+
+/* Text alignment */
+.text-center {
+  text-align: center;
+}
+
+/* Links */
+a {
+  color: #2b95d6; /* Soft blue for links */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #1b4f72;
+}
+
+/* Buttons */
+button {
+  background-color: #2b95d6; /* Button background */
+  color: #ffffff;
+  border: none;
+  padding: 0.8em 1.5em;
+  border-radius: 0.3em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #1b4f72;
+}
+
+/* Forms */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  width: 100%;
+  padding: 0.8em;
+  margin-bottom: 0.5em;
+  border: 1px solid #b1d4e0; /* Border color similar to input backgrounds */
+  border-radius: 0.3em;
+  background-color: #eef7fa; /* Very light blue background for inputs */
+}
+
+input[type="submit"] {
+  background-color: #2b95d6; /* Consistent with button background */
+  color: white;
+  padding: 0.8em 1.5em;
+  border: none;
+  border-radius: 0.3em;
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background-color: #1b4f72;
+}
+
+/* Navigation bar styles */
+nav {
+  background-color: #2b95d6; /* Soft blue background for navbar */
+  padding: 1em 0;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+}
+
+nav ul li {
+  padding: 0 2em;
+}
+
+nav ul li a {
+  color: white;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: #f0fbff;
+}
+
+/* Footer styles */
+footer {
+  background-color: #327a8d; /* Teal background for footer */
+  color: white;
+  text-align: center;
+  padding: 1em 0;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+/* Containers with padding */
+.container {
+  padding: 2em;
+}
+
+/* Utility classes */
+.d-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vh-100 {
+  min-height: 100vh;
+}
+
+.border {
+  border: 1px solid #b1d4e0; /* Soft blue border */
+}
+
+.rounded-lg {
+  border-radius: 0.3em;
+}
+
+.mb-4 {
+  margin-bottom: 1.5em;
+}
+
+.p-4 {
+  padding: 1.5em;
 }

@@ -35,7 +35,8 @@ function SignUpPage() {
             });
             // Handle successful signup
             console.log(response.data);
-            history('/dashboard');
+            localStorage.setItem('token', response.data.jwt);
+            history('/homepage');
         } catch (error) {
             // Handle signup error
             console.error('Signup failed:', error.response ? error.response.data : error.message);
