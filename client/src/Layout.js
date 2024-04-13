@@ -1,6 +1,6 @@
 import React from 'react';
-import NavBar from './NavBar';
-import Footer from './Footer';
+import NavBar from './components/NavBar/NavBar';
+import Footer from './components/Footer/Footer';
 
 const Layout = ({ children }) => {
     return (

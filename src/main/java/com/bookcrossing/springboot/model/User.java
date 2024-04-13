@@ -1,4 +1,4 @@
-package com.bookcrossing.springboot.user;
+package com.bookcrossing.springboot.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,17 +6,25 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int user_id;
+    @Column(name = "user_id")
+    private int userId;
+
     private String username;
     private String email;
-    private String role;
     private String password;
+    private String role;
+
+    //    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private Timestamp created_at;
+
+
 }

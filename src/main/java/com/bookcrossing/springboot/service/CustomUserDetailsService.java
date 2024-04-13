@@ -1,7 +1,10 @@
-package com.bookcrossing.springboot.user;
+package com.bookcrossing.springboot.service;
 
+import com.bookcrossing.springboot.repository.UserRepository;
+import com.bookcrossing.springboot.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,27 +15,26 @@ import java.util.List;
 
 
 @Service
-public class UserDetailsServiceImplementation implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
 
-    public UserDetailsServiceImplementation(UserRepository userRepository) {
+    public CustomUserDetailsService(UserRepository userRepository) {
         this.userRepository=userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
-        System.out.println(user);
-
-        if(user==null) {
-            throw new UsernameNotFoundException("User not found with this email"+username);
-
+        if(user == null) {
+            throw new UsernameNotFoundException("User not found with this username: " + username);
         }
 
-        System.out.println("Loaded user: " + user.getEmail() + ", Role: " + user.getRole());
         List<GrantedAuthority> authorities = new ArrayList<>();
+        // Przypisywanie roli do authorities
+        authorities.add(new SimpleGrantedAuthority(user.getRole())); // Używamy zmienionego formatu roli
+
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),

@@ -1,6 +1,9 @@
-package com.bookcrossing.springboot.user;
+package com.bookcrossing.springboot.controller;
 
-import com.bookcrossing.springboot.AuthResponse;
+import com.bookcrossing.springboot.dto.AuthResponse;
+import com.bookcrossing.springboot.exception.EmailExistsException;
+import com.bookcrossing.springboot.service.UserService;
+import com.bookcrossing.springboot.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +19,6 @@ public class AuthController {
     public AuthController(UserService userService) {
         this.userService = userService;
     }
-
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody User user)  {

@@ -1,4 +1,4 @@
-package com.bookcrossing.springboot;
+package com.bookcrossing.springboot.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -50,4 +50,4 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-} 
+}

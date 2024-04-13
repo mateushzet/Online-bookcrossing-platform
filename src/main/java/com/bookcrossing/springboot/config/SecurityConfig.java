@@ -1,5 +1,6 @@
-package com.bookcrossing.springboot;
+package com.bookcrossing.springboot.config;
 
+import com.bookcrossing.springboot.security.JwtTokenValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,13 +23,15 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeRequests(
-                        authorize -> authorize.requestMatchers("/api/**")
-                                .authenticated().anyRequest().permitAll())
+                        authorize -> authorize
+                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/user/**").authenticated()
+                                .anyRequest().permitAll())
+
                 .addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        //.httpBasic(Customizer.withDefaults())
-        //.formLogin(Customizer.withDefaults());
         return http.build();
     }
 
@@ -42,9 +45,7 @@ public class SecurityConfig {
             ccfg.setExposedHeaders(Arrays.asList("Authorization"));
             ccfg.setMaxAge(3600L);
             return ccfg;
-
         };
-
     }
 
     @Bean
@@ -52,4 +53,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-} 
+}

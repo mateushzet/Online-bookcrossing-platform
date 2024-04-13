@@ -1,4 +1,4 @@
-package com.bookcrossing.springboot;
+package com.bookcrossing.springboot.dto;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.bookcrossing.springboot;
+package com.bookcrossing.springboot.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -20,6 +20,7 @@ public class JwtProvider {
         @SuppressWarnings("deprecation")
         String jwt = Jwts.builder()
                 .setIssuedAt(new Date())
+
                 .setExpiration(new Date(new Date().getTime()+86400000))
                 .claim("email", auth.getName())
                 .claim( "authorities",roles)
@@ -27,7 +28,6 @@ public class JwtProvider {
                 .compact();
         System.out.println("Token for parsing in JwtProvider: " + jwt);
         return jwt;
-
     }
 
     private static String populateAuthorities(Collection<? extends GrantedAuthority> authorities) {
