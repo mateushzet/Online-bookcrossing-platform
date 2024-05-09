@@ -1,13 +1,20 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage/LoginPage';
-import SignUpPage from './pages/SignUpPage/SignUpPage';
-import HomePage from './pages/HomePage/HomePage';
-import AdminPage from './pages/AdminPage/AdminPage';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
+import HomePage from './pages/HomePage';
+import AdminPage from './pages/AdminPage';
 import PrivateRoute from './routing/PrivateRoute';
-import Layout from './Layout';
-import ManageUsers from "./pages/ManageUsers/ManageUsers";
+import Layout from './components/Layout';
+import ManageUsers from "./pages/ManageUsers";
+import Books from "./pages/Books";
+import UserProfile from './pages/UserProfile';
+import BookExchange from './pages/BookExchange';
 import axios from "axios";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ConfirmAccountPage from "./pages/ConfirmAccountPage";
+import AddBook from "./pages/AddBookPage";
 
 function App() {
     const token = localStorage.getItem('token');
@@ -20,11 +27,12 @@ function App() {
         <div className="App">
             <Router>
                 <Routes>
-                    {/* Dla strony logowania użyj prostej strony bez Layout */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignUpPage />} />
+                    <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
+                    <Route path="/resetPassword" element={<ResetPasswordPage />} />
+                    <Route path="/confirmAccount" element={<ConfirmAccountPage />} />
 
-                    {/* Dla ścieżki /home użyj Layout z komponentem Home jako dziecko */}
                     <Route path="/" element={
                         <PrivateRoute>
                             <Layout>
@@ -46,10 +54,39 @@ function App() {
                             </Layout>
                         </PrivateRoute>
                     } />
+                    <Route path="/books" element={
+                        <PrivateRoute>
+                            <Layout>
+                                <Books />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
+                    <Route path="/userProfile" element={
+                        <PrivateRoute>
+                            <Layout>
+                                <UserProfile />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
+                    <Route path="/bookExchange" element={
+                        <PrivateRoute>
+                            <Layout>
+                                <BookExchange />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
+                    <Route path="/addBook" element={
+                        <PrivateRoute>
+                            <Layout>
+                                <AddBook />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
                 </Routes>
             </Router>
         </div>
     );
 }
+
 
 export default App;

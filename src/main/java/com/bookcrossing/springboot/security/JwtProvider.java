@@ -20,9 +20,8 @@ public class JwtProvider {
         @SuppressWarnings("deprecation")
         String jwt = Jwts.builder()
                 .setIssuedAt(new Date())
-
                 .setExpiration(new Date(new Date().getTime()+86400000))
-                .claim("email", auth.getName())
+                .claim("username", auth.getName())
                 .claim( "authorities",roles)
                 .signWith(key)
                 .compact();
@@ -39,10 +38,46 @@ public class JwtProvider {
     }
 
     @SuppressWarnings("deprecation")
-    public static String getEmailFromJwtToken(String jwt) {
-        jwt = jwt.substring(7); // Assuming "Bearer " is removed from the token
+    public static String getUsernameFromJwtToken(String jwt) {
+        jwt = jwt.substring(7);
         try {
-            //Claims claims=Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
+            Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(jwt).getBody();
+            String username = String.valueOf(claims.get("username"));
+            System.out.println("Username extracted from JWT: " + claims);
+            return username;
+        } catch (Exception e) {
+            System.err.println("Error extracting username from JWT: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String generatePasswordResetToken(String email) {
+        String jwt = Jwts.builder()
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(new Date().getTime()+1800000))
+                .claim("email", email)
+                .signWith(key)
+                .compact();
+        System.out.println("Password reset token generated: " + jwt);
+        return jwt;
+    }
+
+    public static String generateAccountConfirmToken(String email) {
+        Date expirationDate = new Date(253402214400000L);
+        String jwt = Jwts.builder()
+                .setIssuedAt(new Date())
+                .setExpiration(expirationDate)
+                .claim("email", email)
+                .signWith(key)
+                .compact();
+        System.out.println("Confirm account token generated: " + jwt);
+        return jwt;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static String getEmailFromJwtToken(String jwt) {
+        try {
             Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(jwt).getBody();
             String email = String.valueOf(claims.get("email"));
             System.out.println("Email extracted from JWT: " + claims);
@@ -53,5 +88,4 @@ public class JwtProvider {
             return null;
         }
     }
-
 }

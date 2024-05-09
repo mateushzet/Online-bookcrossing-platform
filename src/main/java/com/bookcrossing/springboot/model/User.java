@@ -6,10 +6,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @ToString
 public class User {
     @Id
@@ -21,10 +18,14 @@ public class User {
     private String email;
     private String password;
     private String role;
+    private String phone;
+    @Column(name = "is_active")
+    private boolean isActive;
 
-    //    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "email_notifications")
+    private boolean emailNotifications;
+
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private Timestamp created_at;
-
 
 }

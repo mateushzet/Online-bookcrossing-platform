@@ -33,7 +33,6 @@ public class AdminService {
         User user = userRepository.findById((long) userDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found with id " + userDTO.getUserId()));
 
-
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setRole(userDTO.getRole());

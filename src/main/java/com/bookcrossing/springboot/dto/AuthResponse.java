@@ -15,7 +15,6 @@ public class AuthResponse {
         this.status = isAdmin;
     }
 
-
     public String getJwt() {
         return jwt;
     }

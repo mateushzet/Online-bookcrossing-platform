@@ -13,7 +13,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByEmail(String email);
     User findByUsername(String username);
 
-    @Query("SELECT new com.bookcrossing.springboot.user.model.UserDTO(u.userId, u.username, u.email, u.role) FROM User u")
+    @Query("SELECT new com.bookcrossing.springboot.dto.UserDTO(u.userId, u.username, u.email, u.phone, u.emailNotifications) FROM User u WHERE u.username = :username")
+    UserDTO findUserDTOByUsername(String username);
+
+    @Query("SELECT new com.bookcrossing.springboot.dto.UserDTO(u.userId, u.username, u.email, u.role) FROM User u")
     List<UserDTO> findAllUsersWithUsernameEmailRole();
 
     void deleteByUserId(int userId);

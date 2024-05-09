@@ -32,11 +32,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        // Przypisywanie roli do authorities
-        authorities.add(new SimpleGrantedAuthority(user.getRole())); // Używamy zmienionego formatu roli
+        authorities.add(new SimpleGrantedAuthority(user.getRole()));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
+                user.getUsername(),
                 user.getPassword(),
                 authorities);
     }
