@@ -28,4 +28,8 @@ public class Exchange {
         this.ownerId = ownerId;
         this.bookCondition = bookCondition;
     }
+
+    @OneToOne
+    @JoinColumn(name = "book_id", insertable = false, updatable = false)
+    private Book book;
 }

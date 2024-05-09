@@ -1,11 +1,14 @@
 package com.bookcrossing.springboot.service;
 
+import com.bookcrossing.springboot.dto.CombinedBookExchangeDTO;
 import com.bookcrossing.springboot.model.Exchange;
 import com.bookcrossing.springboot.model.User;
 import com.bookcrossing.springboot.repository.ExchangeRepository;
 import com.bookcrossing.springboot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ExchangeService {
@@ -30,5 +33,9 @@ public class ExchangeService {
             return false;
         }
         return true;
+    }
+
+    public List<CombinedBookExchangeDTO> getAllExchanges (){
+        return exchangeRepository.findAllBookExchanges();
     }
 }

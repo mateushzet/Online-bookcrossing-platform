@@ -14,7 +14,7 @@ import axios from "axios";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ConfirmAccountPage from "./pages/ConfirmAccountPage";
-import AddBook from "./pages/AddBookPage";
+import ExchangeOffers from "./pages/ExchangeOffers";
 
 function App() {
     const token = localStorage.getItem('token');
@@ -75,10 +75,10 @@ function App() {
                             </Layout>
                         </PrivateRoute>
                     } />
-                    <Route path="/addBook" element={
+                    <Route path="/exchangeOffers" element={
                         <PrivateRoute>
                             <Layout>
-                                <AddBook />
+                                <ExchangeOffers />
                             </Layout>
                         </PrivateRoute>
                     } />

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Card, Button, ListGroup, Form, Alert } from 'react-bootstrap';
-import logoImage from '../assets/icons/logo192.png';
+import { Container, Card, Button, ListGroup, Form, Alert, Modal } from 'react-bootstrap';
+import profileImage from '../assets/icons/user-profile.png';
 import axios from "axios";
 
-function UserProfile() {
+function UserProfile({ show, onHide }) {  // Ensure show and onHide are included in the component's parameters
     const [user, setUser] = useState({ username: '', email: '', phone: '', emailNotifications: false });
     const [editMode, setEditMode] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
@@ -54,15 +54,15 @@ function UserProfile() {
     };
 
     return (
-        <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
-            <Card className="my-5 shadow-lg" style={{ width: '18rem' }}>
-                <Card.Img variant="top" src={logoImage} alt="User Image" />
-                <Card.Body>
-                    <Card.Title>Profile Details</Card.Title>
-                    {statusMessage && <Alert variant="info">{statusMessage}</Alert>}
-                    {validationError && <Alert variant="danger">{validationError}</Alert>}
-                </Card.Body>
-                <ListGroup className="list-group-flush">
+        <Modal show={show} onHide={onHide}>
+            <Modal.Header closeButton>
+                <Modal.Title>Profile Details</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <div className="text-center mb-3">
+                    <img src={profileImage} alt="User" style={{ width: '100px' }} />
+                </div>
+                <ListGroup>
                     <ListGroup.Item>Username: {user.username}</ListGroup.Item>
                     <ListGroup.Item>
                         Email: {editMode ? (
@@ -97,18 +97,18 @@ function UserProfile() {
                     ) : (user.emailNotifications ? 'Tak' : 'Nie')}
                     </ListGroup.Item>
                 </ListGroup>
-                <Card.Body>
-                    {editMode ? (
-                        <>
-                            <Button variant="primary" onClick={handleSave}>Save</Button>
-                            <Button variant="secondary" onClick={() => setEditMode(false)} className="ml-2">Cancel</Button>
-                        </>
-                    ) : (
-                        <Button variant="secondary" onClick={() => setEditMode(true)}>Edit</Button>
-                    )}
-                </Card.Body>
-            </Card>
-        </Container>
+            </Modal.Body>
+            <Modal.Footer>
+                {editMode ? (
+                    <>
+                        <Button variant="primary" onClick={handleSave}>Save</Button>
+                        <Button variant="secondary" onClick={() => setEditMode(false)}>Cancel</Button>
+                    </>
+                ) : (
+                    <Button variant="secondary" onClick={() => setEditMode(true)}>Edit</Button>
+                )}
+            </Modal.Footer>
+        </Modal>
     );
 }
 
