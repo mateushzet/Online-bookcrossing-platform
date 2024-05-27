@@ -1,6 +1,135 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Table, Button, Pagination, Form, Alert } from 'react-bootstrap';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  color: black;
+  max-width: 1200px;
+`;
+
+const Header = styled.div`
+  background-color: #627254;
+  height: 10%;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 1rem 1rem 0 0;
+  text-align: center;
+`;
+
+const HeaderTitle = styled.h1`
+  margin: 0;
+  font-size: 1.5rem;
+`;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  height: 80%;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+
+  thead {
+    background-color: #627254;
+    color: white;
+  }
+
+  th, td {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10%;
+`;
+
+const PaginationButton = styled.button`
+  background: ${({ active }) => (active ? '#627254' : '#fff')};
+  color: ${({ active }) => (active ? '#fff' : '#627254')};
+  border: 1px solid #627254;
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  &:hover:enabled {
+    background-color: #41542b;
+    color: #fff;
+  }
+`;
+
+const Alert = styled.div`
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-color: #bee5eb;
+`;
+
+const Spinner = styled.div`
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const Button = styled.button`
+  background: ${({ variant }) => (variant === 'outline-primary' ? '#007bff' : variant === 'outline-danger' ? '#dc3545' : '#6c757d')};
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  margin-right: 10px;
+  cursor: pointer;
+  &:hover {
+    background: ${({ variant }) => (variant === 'outline-primary' ? '#0056b3' : variant === 'outline-danger' ? '#c82333' : '#5a6268')};
+  }
+`;
+
+const FormControl = styled.input`
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+`;
 
 function ManageUsers() {
     const [users, setUsers] = useState([]);
@@ -15,8 +144,10 @@ function ManageUsers() {
             try {
                 const response = await axios.get('http://localhost:8080/api/admin/usersTable');
                 setUsers(response.data);
+                setStatusMessage('');
             } catch (error) {
                 console.error("Failed to fetch users:", error);
+                setStatusMessage('Failed to fetch users.');
             } finally {
                 setIsLoading(false);
             }
@@ -25,20 +156,15 @@ function ManageUsers() {
         fetchData();
     }, []);
 
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
-
     const handleFieldChange = (userId, field, value) => {
         setUsers(users.map(user => user.userId === userId ? { ...user, [field]: value } : user));
     };
 
     const modifyUser = (user) => {
-        console.log('Modifying user:', user);
         axios.put('http://localhost:8080/api/admin/modifyUser', user)
             .then(response => {
-                console.log(response.data);
                 setStatusMessage('User has been modified successfully.');
+                setUsers(prev => prev.map(u => u.userId === user.userId ? {...u, ...response.data} : u));
             })
             .catch(error => {
                 console.error('Error modifying user:', error);
@@ -48,8 +174,7 @@ function ManageUsers() {
 
     const deleteUser = (userId) => {
         axios.delete('http://localhost:8080/api/admin/deleteUser', { params: { userId } })
-            .then(response => {
-                console.log(response.data);
+            .then(() => {
                 setUsers(users.filter(user => user.userId !== userId));
                 setStatusMessage('User has been deleted successfully.');
             })
@@ -65,40 +190,26 @@ function ManageUsers() {
 
     const renderPaginationItems = (currentPage, totalPages) => {
         let items = [];
-        let startPage, endPage;
+        const pageLimit = 5; // Adjust this for more or fewer visible page links
+        let startPage = currentPage - Math.floor(pageLimit / 2);
+        let endPage = currentPage + Math.floor(pageLimit / 2);
 
-        if (totalPages <= 5) {
+        if (startPage < 1) {
             startPage = 1;
-            endPage = totalPages;
-        } else {
-            if (currentPage <= 3) {
-                startPage = 1;
-                endPage = 5;
-            } else if (currentPage + 2 >= totalPages) {
-                startPage = totalPages - 4;
-                endPage = totalPages;
-            } else {
-                startPage = currentPage - 2;
-                endPage = currentPage + 2;
-            }
+            endPage = Math.min(pageLimit, totalPages);
         }
 
-        if (startPage > 1) {
-            items.push(<Pagination.First key="first" onClick={() => paginate(1)} />);
-            items.push(<Pagination.Ellipsis key="ellipsis-1" />);
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = Math.max(1, totalPages - pageLimit + 1);
         }
 
         for (let number = startPage; number <= endPage; number++) {
             items.push(
-                <Pagination.Item key={number} active={number === currentPage} onClick={() => paginate(number)}>
+                <PaginationButton key={number} active={number === currentPage} onClick={() => paginate(number)}>
                     {number}
-                </Pagination.Item>,
+                </PaginationButton>,
             );
-        }
-
-        if (endPage < totalPages) {
-            items.push(<Pagination.Ellipsis key="ellipsis-2" />);
-            items.push(<Pagination.Last key="last" onClick={() => paginate(totalPages)} />);
         }
 
         return items;
@@ -107,61 +218,67 @@ function ManageUsers() {
     const paginationItems = renderPaginationItems(currentPage, Math.ceil(users.length / usersPerPage));
 
     return (
-        <Container className="my-4">
-            <h2 className="text-center mb-4">Manage Users</h2>
-            {statusMessage && <Alert variant="info">{statusMessage}</Alert>}
+        <Container>
+            <Header>
+                <HeaderTitle>Manage Users</HeaderTitle>
+            </Header>
+            {statusMessage && <Alert>{statusMessage}</Alert>}
             {isLoading ? (
-                <p>Loading...</p>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Spinner />
+                </div>
             ) : (
                 <>
-                    <Table striped bordered hover className="shadow">
-                        <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {currentUsers.map((user) => (
-                            <tr key={user.userId}>
-                                <td>
-                                    <Form.Control
-                                        type="text"
-                                        value={user.username}
-                                        onChange={(e) => handleFieldChange(user.userId, 'username', e.target.value)}
-                                    />
-                                </td>
-                                <td>
-                                    <Form.Control
-                                        type="email"
-                                        value={user.email}
-                                        onChange={(e) => handleFieldChange(user.userId, 'email', e.target.value)}
-                                    />
-                                </td>
-                                <td>
-                                    <Form.Select
-                                        value={user.role}
-                                        onChange={(e) => handleFieldChange(user.userId, 'role', e.target.value)}
-                                    >
-                                        <option value="ROLE_USER">User</option>
-                                        <option value="ROLE_ADMIN">Admin</option>
-                                    </Form.Select>
-                                </td>
-                                <td>
-                                    <Button variant="primary" size="sm" className="me-2" onClick={() => modifyUser(user)}>Modify</Button>
-                                    <Button variant="danger" size="sm" onClick={() => deleteUser(user.userId)}>Delete</Button>
-                                </td>
+                    <TableContainer>
+                        <Table>
+                            <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </Table>
-                    <Pagination className="justify-content-center">
-                        <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
+                            </thead>
+                            <tbody>
+                            {users.slice((currentPage-1) * usersPerPage, currentPage * usersPerPage).map((user) => (
+                                <tr key={user.userId}>
+                                    <td>
+                                        <FormControl
+                                            type="text"
+                                            value={user.username}
+                                            onChange={(e) => handleFieldChange(user.userId, 'username', e.target.value)}
+                                        />
+                                    </td>
+                                    <td>
+                                        <FormControl
+                                            type="email"
+                                            value={user.email}
+                                            onChange={(e) => handleFieldChange(user.userId, 'email', e.target.value)}
+                                        />
+                                    </td>
+                                    <td>
+                                        <Select
+                                            value={user.role}
+                                            onChange={(e) => handleFieldChange(user.userId, 'role', e.target.value)}
+                                        >
+                                            <option value="ROLE_USER">User</option>
+                                            <option value="ROLE_ADMIN">Admin</option>
+                                        </Select>
+                                    </td>
+                                    <td>
+                                        <Button variant="outline-primary" onClick={() => modifyUser(user)}>Modify</Button>
+                                        <Button variant="outline-danger" onClick={() => deleteUser(user.userId)}>Delete</Button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </TableContainer>
+                    <PaginationContainer>
+                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Previous</PaginationButton>
                         {paginationItems}
-                        <Pagination.Next onClick={nextPage} disabled={currentPage === Math.ceil(users.length / usersPerPage)} />
-                    </Pagination>
+                        <PaginationButton onClick={nextPage} disabled={currentPage === Math.ceil(users.length / usersPerPage)}>Next</PaginationButton>
+                    </PaginationContainer>
                 </>
             )}
         </Container>

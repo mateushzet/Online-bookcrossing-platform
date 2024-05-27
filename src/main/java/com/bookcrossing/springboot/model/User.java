@@ -1,8 +1,10 @@
 package com.bookcrossing.springboot.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -28,4 +30,8 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private Timestamp created_at;
 
+    @OneToMany
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id")
+    @JsonBackReference
+    private List<Exchange> exchanges;
 }

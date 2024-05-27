@@ -15,6 +15,8 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ConfirmAccountPage from "./pages/ConfirmAccountPage";
 import ExchangeOffers from "./pages/ExchangeOffers";
+import AcceptedExchanges from "./pages/AcceptedExchanges";
+
 
 function App() {
     const token = localStorage.getItem('token');
@@ -24,6 +26,7 @@ function App() {
         delete axios.defaults.headers.common['Authorization'];
     }
     return (
+
         <div className="App">
             <Router>
                 <Routes>
@@ -82,11 +85,17 @@ function App() {
                             </Layout>
                         </PrivateRoute>
                     } />
+                    <Route path="/acceptedExchanges" element={
+                        <PrivateRoute>
+                            <Layout>
+                                <AcceptedExchanges />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
                 </Routes>
             </Router>
         </div>
     );
 }
-
 
 export default App;

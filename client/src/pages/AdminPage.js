@@ -1,6 +1,54 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Button, Card } from 'react-bootstrap';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
+
+const Card = styled.div`
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  overflow: hidden;
+`;
+
+const CardHeader = styled.div`
+  background-color: #627254;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+`;
+
+const CardBody = styled.div`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Button = styled.button`
+  width: 75%;
+  margin: 15px 0;
+  padding: 10px 20px;
+  font-size: 1.25rem;
+  color: #fff;
+  background-color: #6c757d;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #5a6268;
+  }
+`;
 
 function AdminPage() {
     const navigate = useNavigate();
@@ -18,16 +66,22 @@ function AdminPage() {
     };
 
     return (
-        <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
-            <Card className="shadow-lg p-5" style={{ minWidth: '400px' }}>
-                <Card.Header className="bg-primary text-white text-center">
+        <Container>
+            <Card>
+                <CardHeader>
                     <h2>Admin Panel</h2>
-                </Card.Header>
-                <Card.Body className="d-flex flex-column align-items-stretch">
-                    <Button variant="info" className="my-2" onClick={handleManageUsers}>Manage Users</Button>
-                    <Button variant="warning" className="my-2" onClick={handleManageBooks}>Manage Books</Button>
-                    <Button variant="secondary" className="my-2" onClick={handleSettings}>Settings</Button>
-                </Card.Body>
+                </CardHeader>
+                <CardBody>
+                    <Button onClick={handleManageUsers}>
+                        Manage Users
+                    </Button>
+                    <Button onClick={handleManageBooks}>
+                        Manage Books
+                    </Button>
+                    <Button onClick={handleSettings}>
+                        Settings
+                    </Button>
+                </CardBody>
             </Card>
         </Container>
     );

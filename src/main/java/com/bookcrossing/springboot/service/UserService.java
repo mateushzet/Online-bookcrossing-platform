@@ -22,6 +22,10 @@ public class UserService {
         return userRepository.findUserDTOByUsername(username);
     }
 
+    public UserDTO getUser(int userId){
+        return userRepository.findUserDTOByUserId(userId);
+    }
+
     public List<UserDTO> getAllUsers() {
         return userRepository.findAllUsersWithUsernameEmailRole();
     }

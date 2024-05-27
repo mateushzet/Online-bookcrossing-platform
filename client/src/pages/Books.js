@@ -1,6 +1,150 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Table, Pagination, Modal, Button, Form } from 'react-bootstrap';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  color: black;
+  max-width: 1200px;
+`;
+
+const Header = styled.div`
+  background-color: #627254;
+  height: 10%;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 1rem 1rem 0 0;
+  text-align: center;
+`;
+
+const HeaderTitle = styled.h1`
+  margin: 0;
+  font-size: 1.5rem;
+`;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  height: 80%;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+
+  thead {
+    background-color: #627254;
+    color: white;
+  }
+
+  th, td {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10%;
+`;
+
+const PaginationButton = styled.button`
+  background: ${({ active }) => (active ? '#627254' : '#fff')};
+  color: ${({ active }) => (active ? '#fff' : '#627254')};
+  border: 1px solid #627254;
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  &:hover:enabled {
+    background-color: #41542b;
+    color: #fff;
+  }
+`;
+
+const ModalBackground = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContainer = styled.div`
+  background: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 500px;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const ModalTitle = styled.h5`
+  margin: 0;
+  color: #627254;
+`;
+
+const ModalCloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #627254;
+`;
+
+const ModalBody = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+`;
+
+const Button = styled.button`
+  background: ${({ variant }) => (variant === 'primary' ? '#627254' : '#6c757d')};
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  &:hover {
+    background: ${({ variant }) => (variant === 'primary' ? '#41542b' : '#5a6268')};
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+`;
 
 function Books() {
     const [books, setBooks] = useState([]);
@@ -53,41 +197,41 @@ function Books() {
         if (totalPages <= 5) {
             for (let number = 1; number <= totalPages; number++) {
                 items.push(
-                    <Pagination.Item key={number} active={number === currentPage} onClick={() => paginate(number)}>
+                    <PaginationButton key={number} active={number === currentPage} onClick={() => paginate(number)}>
                         {number}
-                    </Pagination.Item>
+                    </PaginationButton>
                 );
             }
         } else {
             items.push(
-                <Pagination.Item key={1} active={currentPage === 1} onClick={() => paginate(1)}>
+                <PaginationButton key={1} active={currentPage === 1} onClick={() => paginate(1)}>
                     1
-                </Pagination.Item>
+                </PaginationButton>
             );
 
             let startPage = Math.max(2, currentPage - 2);
             let endPage = Math.min(totalPages - 1, currentPage + 2);
 
             if (startPage > 2) {
-                items.push(<Pagination.Ellipsis key="ellipsis-1" onClick={handleEllipsisClick} />);
+                items.push(<PaginationButton key="ellipsis-1" onClick={handleEllipsisClick}>...</PaginationButton>);
             }
 
             for (let number = startPage; number <= endPage; number++) {
                 items.push(
-                    <Pagination.Item key={number} active={number === currentPage} onClick={() => paginate(number)}>
+                    <PaginationButton key={number} active={number === currentPage} onClick={() => paginate(number)}>
                         {number}
-                    </Pagination.Item>
+                    </PaginationButton>
                 );
             }
 
             if (endPage < totalPages - 1) {
-                items.push(<Pagination.Ellipsis key="ellipsis-2" onClick={handleEllipsisClick} />);
+                items.push(<PaginationButton key="ellipsis-2" onClick={handleEllipsisClick}>...</PaginationButton>);
             }
 
             items.push(
-                <Pagination.Item key={totalPages} active={currentPage === totalPages} onClick={() => paginate(totalPages)}>
+                <PaginationButton key={totalPages} active={currentPage === totalPages} onClick={() => paginate(totalPages)}>
                     {totalPages}
-                </Pagination.Item>
+                </PaginationButton>
             );
         }
 
@@ -95,39 +239,42 @@ function Books() {
     };
 
     return (
-        <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Go to Page</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group>
-                            <Form.Label>Enter page number</Form.Label>
-                            <Form.Control
+        <Container>
+            <Header>
+                <HeaderTitle>Baza książek</HeaderTitle>
+            </Header>
+            {showModal && (
+                <ModalBackground>
+                    <ModalContainer>
+                        <ModalHeader>
+                            <ModalTitle>Go to Page</ModalTitle>
+                            <ModalCloseButton onClick={() => setShowModal(false)}>&times;</ModalCloseButton>
+                        </ModalHeader>
+                        <ModalBody>
+                            <label>Enter page number</label>
+                            <Input
                                 type="number"
                                 value={inputPage}
                                 onChange={e => setInputPage(e.target.value)}
                                 min="1"
                                 max={totalPages}
                             />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
-                    <Button variant="primary" onClick={handlePageInput}>Go</Button>
-                </Modal.Footer>
-            </Modal>
-            <Container className="my-5 shadow rounded bg-white p-4">
-                <h2 className="text-primary mb-4 text-center">Manage Books</h2>
-                {isLoading ? (
-                    <p className="text-center">Loading...</p>
-                ) : error ? (
-                    <p className="text-center text-danger">{error}</p>
-                ) : (
-                    <>
-                        <Table striped bordered hover className="text-center">
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+                            <Button variant="primary" onClick={handlePageInput}>Go</Button>
+                        </ModalFooter>
+                    </ModalContainer>
+                </ModalBackground>
+            )}
+            {isLoading ? (
+                <p>Loading...</p>
+            ) : error ? (
+                <p style={{ color: '#dc3545' }}>{error}</p>
+            ) : (
+                <>
+                    <TableContainer>
+                        <Table>
                             <thead>
                             <tr>
                                 <th>Book ID</th>
@@ -151,14 +298,14 @@ function Books() {
                             ))}
                             </tbody>
                         </Table>
-                        <Pagination className="justify-content-center">
-                            <Pagination.Prev onClick={prevPage} disabled={currentPage === 1} />
-                            {renderPaginationItems()}
-                            <Pagination.Next onClick={nextPage} disabled={currentPage === totalPages} />
-                        </Pagination>
-                    </>
-                )}
-            </Container>
+                    </TableContainer>
+                    <PaginationContainer>
+                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Previous</PaginationButton>
+                        {renderPaginationItems()}
+                        <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>Next</PaginationButton>
+                    </PaginationContainer>
+                </>
+            )}
         </Container>
     );
 }
