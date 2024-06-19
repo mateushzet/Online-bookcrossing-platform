@@ -30,7 +30,9 @@ public class ExchangeController {
     }
 
     @PostMapping("/submitExchange")
-    public ResponseEntity<?> submitExchange(@RequestParam int bookId, String description, String bookCondition,  @RequestParam(required = false) MultipartFile image, HttpServletRequest request) {
+    public ResponseEntity<?> submitExchange(@RequestParam int bookId, String preferredBooksDescription, String bookCondition, String exchangeDescription, String preferredBooks, @RequestParam(required = false) MultipartFile image, HttpServletRequest request) {
+
+        System.out.println(preferredBooksDescription + bookCondition + exchangeDescription);
         int userId = getUserIdFromToken(request);
         byte[] imageBytes = null;
 
@@ -41,7 +43,7 @@ public class ExchangeController {
             }
         }
 
-        if(exchangeService.submitExchange(bookId, description, userId, bookCondition, imageBytes)) return ResponseEntity.ok("Exchange proposition has been submitted");
+        if(exchangeService.submitExchange(bookId, preferredBooksDescription, userId, bookCondition, exchangeDescription, preferredBooks, imageBytes)) return ResponseEntity.ok("Exchange proposition has been submitted");
         return ResponseEntity.badRequest().body("Exchange proposition submit failed.");
     }
 
@@ -62,6 +64,13 @@ public class ExchangeController {
     public ResponseEntity<?> cancelExchange(@RequestParam int exchangeId, int ownerId, int selectedUser, HttpServletRequest request){
         int userId = getUserIdFromToken(request);
         exchangeService.cancelExchange(exchangeId, ownerId, selectedUser, userId);
+        return ResponseEntity.ok("Exchange offer canceled");
+    }
+
+    @PostMapping("/deleteExchange")
+    public ResponseEntity<?> cancelExchange(@RequestParam int exchangeId, int ownerId, HttpServletRequest request){
+        int userId = getUserIdFromToken(request);
+        exchangeService.deleteExchange(exchangeId, ownerId, userId);
         return ResponseEntity.ok("Exchange offer canceled");
     }
 

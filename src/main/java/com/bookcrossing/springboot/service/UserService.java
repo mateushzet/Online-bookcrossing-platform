@@ -50,12 +50,34 @@ public class UserService {
     public void modifyUserDetails(UserDTO userDTO) {
         User user = userRepository.findById((long) userDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found with id " + userDTO.getUserId()));
-
+        System.out.println(userDTO);
         user.setEmail(userDTO.getEmail());
         user.setPhone(userDTO.getPhone());
         user.setEmailNotifications(userDTO.isEmailNotifications());
-
+        user.setLat(userDTO.getLat());
+        user.setLng(userDTO.getLng());
+        user.setCity(userDTO.getCity());
         userRepository.save(user);
     }
+
+    @Transactional
+    public void banUser(int userID) {
+        User user = userRepository.findById((long)userID)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + userID));
+
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unbanUser(int userID) {
+        User user = userRepository.findById((long)userID)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + userID));
+
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+
 
 }

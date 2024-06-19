@@ -29,6 +29,9 @@ public class User {
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private Timestamp created_at;
+    private String city;
+    private double lat;
+    private double lng;
 
     @OneToMany
     @JoinColumn(name = "owner_id", referencedColumnName = "user_id")

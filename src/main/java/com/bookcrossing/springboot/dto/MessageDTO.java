@@ -1,5 +1,6 @@
 package com.bookcrossing.springboot.dto;
 
+import com.bookcrossing.springboot.model.Message;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,14 +16,25 @@ public class MessageDTO {
     private int receiverId;
     private String content;
     private Timestamp timestamp;
+    private String senderUsername;
 
-    public MessageDTO(int messageId, int exchangeId, int senderId, int receiverId, String content, Timestamp timestamp) {
+    public MessageDTO(int messageId, int exchangeId, int senderId, int receiverId, String content, Timestamp timestamp, String senderUsername) {
         this.messageId = messageId;
         this.exchangeId = exchangeId;
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.content = content;
         this.timestamp = timestamp;
+        this.senderUsername = senderUsername;
     }
 
+    public MessageDTO(Message message, String senderUsername) {
+        this.messageId = message.getMessageId();
+        this.content = message.getContent();
+        this.timestamp = message.getTimestamp();
+        this.senderUsername = senderUsername;
+    }
+
+    public MessageDTO() {
+    }
 }

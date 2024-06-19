@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import UserAvatarComponent from '../components/UserAvatarComponent';
 import SearchFilters from '../components/SearchFilters';
+import { getDistance } from 'geolib';
+import debounce from 'lodash/debounce';
+import { useLocation, useNavigate } from 'react-router-dom';
+import 'leaflet/dist/leaflet.css';
+import defaultBookImage from '../assets/icons/no-book-image.webp';
 
 const StyledContainer = styled.div`
-  max-width: 1200px;
   margin: auto;
-  height: 100%;
-  width: 100%;
+  height: auto;
+  width: 80%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,18 +47,18 @@ const StyledCard = styled.div`
   }
 `;
 
-const CardHeader = styled.div`
+const LeftColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 70%;
+`;
+
+const RightColumn = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 20px;
-`;
-
-const CardBody = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  text-align: left;
+  width: 30%;
 `;
 
 const CardTitle = styled.h5`
@@ -67,12 +71,20 @@ const CardText = styled.p`
   color: #555;
   margin-bottom: 12px;
   font-size: 1em;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 `;
 
 const AcceptButton = styled.button`
   padding: 10px 20px;
   font-size: 16px;
-  max-width: 40%;
   background-color: #627254;
   color: white;
   border: none;
@@ -82,6 +94,21 @@ const AcceptButton = styled.button`
 
   &:hover {
     background-color: #41542b;
+  }
+`;
+
+const DetailsButton = styled.button`
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #627254;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #357ab8;
   }
 `;
 
@@ -99,8 +126,8 @@ const HeaderTitle = styled.h1`
 `;
 
 const ImagePreview = styled.img`
-  max-width: 250px;
-  max-height: 250px;
+  width: 250px;
+  height: 250px;
   cursor: pointer;
   margin-bottom: 10px;
 `;
@@ -135,7 +162,19 @@ const CloseButton = styled.button`
   cursor: pointer;
 `;
 
-function ExchangeOffers() {
+const Hashtag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  background-color: #e1f3d8;
+  color: #627254;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 2px;
+  font-size: 0.9em;
+  cursor: pointer;
+`;
+
+const ExchangeOffers = () => {
     const [offers, setOffers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [authorQuery, setAuthorQuery] = useState('');
@@ -144,32 +183,101 @@ function ExchangeOffers() {
     const [genreFilter, setGenreFilter] = useState('');
     const [filteredOffers, setFilteredOffers] = useState([]);
     const [fullSizeImage, setFullSizeImage] = useState(null);
+    const [maxDistance, setMaxDistance] = useState(null);
+    const [userLocation, setUserLocation] = useState({ lat: 0, lng: 0 });
+    const [tempLocation, setTempLocation] = useState({ lat: 0, lng: 0 });
+    const [cityInput, setCityInput] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/user/fetchExchanges`)
+        axios.get('http://localhost:8080/api/user/getUser')
+            .then(response => {
+                const location = { lat: response.data.lat, lng: response.data.lng };
+                setUserLocation(location);
+                if (!cityInput) {
+                    setCityInput(response.data.city || '');
+                }
+                console.log("User location:", location);
+            })
+            .catch(error => console.error('Error fetching user location:', error));
+
+        axios.get('http://localhost:8080/api/user/fetchExchanges')
             .then(response => {
                 setOffers(response.data);
                 setFilteredOffers(response.data);
+                console.log("Fetched offers:", response.data);
             })
             .catch(error => console.error('Error fetching offers:', error));
     }, []);
 
     useEffect(() => {
-        const lowercasedSearchQuery = searchQuery.toLowerCase();
-        const lowercasedAuthorQuery = authorQuery.toLowerCase();
-        const lowercasedExchangeDescriptionQuery = exchangeDescriptionQuery.toLowerCase();
-        const filtered = offers.filter(offer =>
-            offer.title.toLowerCase().includes(lowercasedSearchQuery) &&
-            offer.author.toLowerCase().includes(lowercasedAuthorQuery) &&
-            offer.exchangeDescription.toLowerCase().includes(lowercasedExchangeDescriptionQuery) &&
-            (bookConditionFilter === '' || offer.bookCondition === bookConditionFilter) &&
-            (genreFilter === '' || offer.genre === genreFilter)
-        );
+        const queryParams = new URLSearchParams(location.search);
+        const title = queryParams.get('title') || '';
+        const author = queryParams.get('author') || '';
+        const genre = queryParams.get('genre') || '';
+        const lat = parseFloat(queryParams.get('lat')) || 0;
+        const lng = parseFloat(queryParams.get('lng')) || 0;
+        const city = queryParams.get('city') || '';
+
+        setSearchQuery(title);
+        setAuthorQuery(author);
+        setGenreFilter(genre);
+        if (lat && lng) {
+            setTempLocation({ lat, lng });
+            reverseGeocode(lat, lng);
+            setMaxDistance(5);
+        } else if (city) {
+            setCityInput(city);
+        }
+    }, [location.search]);
+
+    const reverseGeocode = async (lat, lng) => {
+        try {
+            const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const city = response.data.address.city || response.data.address.town || response.data.address.village || '';
+            setCityInput(city);
+        } catch (error) {
+            console.error("Reverse geocoding failed:", error);
+        }
+    };
+
+    useEffect(() => {
+        recalculateDistances();
+    }, [searchQuery, authorQuery, exchangeDescriptionQuery, bookConditionFilter, genreFilter, offers, maxDistance, tempLocation]);
+
+    const recalculateDistances = () => {
+        const lowercasedSearchQuery = searchQuery ? searchQuery.toLowerCase() : '';
+        const lowercasedAuthorQuery = authorQuery ? authorQuery.toLowerCase() : '';
+        const lowercasedExchangeDescriptionQuery = exchangeDescriptionQuery ? exchangeDescriptionQuery.toLowerCase() : '';
+
+        const filtered = offers.filter(offer => {
+            const matchesFilters =
+                (offer.title ? offer.title.toLowerCase().includes(lowercasedSearchQuery) : true) &&
+                (offer.author ? offer.author.toLowerCase().includes(lowercasedAuthorQuery) : true) &&
+                (offer.exchangeDescription ? offer.exchangeDescription.toLowerCase().includes(lowercasedExchangeDescriptionQuery) : true) &&
+                (bookConditionFilter === '' || offer.bookCondition === bookConditionFilter) &&
+                (genreFilter === '' || offer.genre === genreFilter);
+
+            if (tempLocation.lat !== 0 && tempLocation.lng !== 0 && offer.lat !== 0 && offer.lng !== 0) {
+                const distance = getDistance(tempLocation, { lat: offer.lat, lng: offer.lng }) / 1000;
+                console.log(`Distance for offer ${offer.title}: ${distance} km`);
+                return matchesFilters && (maxDistance === null || distance <= maxDistance);
+            } else if (maxDistance === null) {
+                return matchesFilters;
+            } else {
+                console.log(`Offer ${offer.title} does not have valid location data.`);
+                return false;
+            }
+        });
+
         setFilteredOffers(filtered);
-    }, [searchQuery, authorQuery, exchangeDescriptionQuery, bookConditionFilter, genreFilter, offers]);
+    };
 
     const handleAcceptOffer = (exchangeId, ownerId) => {
-        axios.post(`http://localhost:8080/api/user/acceptExchange`, {}, {
+        axios.post('http://localhost:8080/api/user/acceptExchange', {}, {
             params: {
                 exchangeId: exchangeId,
                 ownerId: ownerId
@@ -180,6 +288,24 @@ function ExchangeOffers() {
                 setSearchQuery('');
             })
             .catch(error => console.error('Error accepting offer:', error));
+    };
+
+    const handleViewBookDetails = (title, author, genre) => {
+        const query = new URLSearchParams({
+            title,
+            author,
+            genre
+        }).toString();
+        navigate(`/books?${query}`);
+    };
+
+    const handleViewPreferredBookDetails = (book) => {
+        const query = new URLSearchParams({
+            title: book.title,
+            author: book.author,
+            genre: book.genre
+        }).toString();
+        navigate(`/books?${query}`);
     };
 
     const uniqueBookConditions = [...new Set(offers.map(offer => offer.bookCondition))];
@@ -193,6 +319,64 @@ function ExchangeOffers() {
         setFullSizeImage(null);
     };
 
+    const geocodeLocationByName = useCallback(
+        debounce(async (cityName) => {
+            try {
+                const response = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&country=Poland&city=${cityName}`);
+                if (response.data && response.data.length > 0) {
+                    const location = response.data[0];
+                    const lat = parseFloat(location.lat);
+                    const lng = parseFloat(location.lon);
+                    setTempLocation({ lat, lng });
+                    setSuggestions(response.data);
+                    console.log("Geocoded location:", { lat, lng });
+                    return { lat, lng };
+                } else {
+                    setSuggestions([]);
+                }
+            } catch (error) {
+                console.error("Geocoding failed:", error);
+                setSuggestions([]);
+            }
+        }, 300), []
+    );
+
+    const handleCityInputChange = async (event) => {
+        const value = event.target.value;
+        setCityInput(value);
+
+        if (value.length > 2) {
+            geocodeLocationByName(value);
+        } else {
+            setSuggestions([]);
+        }
+    };
+
+    const handleCitySelect = async (event) => {
+        const value = event.target.value;
+        const selectedOption = suggestions.find(suggestion => suggestion.display_name === value);
+        if (selectedOption) {
+            setCityInput(value);
+            const lat = parseFloat(selectedOption.lat);
+            const lng = parseFloat(selectedOption.lon);
+            setTempLocation({ lat, lng });
+            console.log("Selected location:", { lat, lng });
+            recalculateDistances();
+        }
+    };
+
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setAuthorQuery('');
+        setExchangeDescriptionQuery('');
+        setBookConditionFilter('');
+        setGenreFilter('');
+        setMaxDistance(null);
+        setTempLocation(userLocation);
+        setCityInput('');
+        setSuggestions([]);
+    };
+
     return (
         <StyledContainer>
             <Header>
@@ -204,36 +388,47 @@ function ExchangeOffers() {
                 exchangeDescriptionQuery={exchangeDescriptionQuery}
                 bookConditionFilter={bookConditionFilter}
                 genreFilter={genreFilter}
+                cityInput={cityInput}
                 setSearchQuery={setSearchQuery}
                 setAuthorQuery={setAuthorQuery}
                 setExchangeDescriptionQuery={setExchangeDescriptionQuery}
                 setBookConditionFilter={setBookConditionFilter}
                 setGenreFilter={setGenreFilter}
+                handleCityInputChange={handleCityInputChange}
+                handleCitySelect={handleCitySelect}
+                suggestions={suggestions}
+                maxDistance={maxDistance}
+                setMaxDistance={setMaxDistance}
+                handleResetFilters={handleResetFilters}
                 uniqueBookConditions={uniqueBookConditions}
                 uniqueGenres={uniqueGenres}
+                isFiltersExpanded={isFiltersExpanded}
+                setIsFiltersExpanded={setIsFiltersExpanded}
             />
             <OffersContainer>
                 {filteredOffers.map((offer, index) => (
                     <StyledCard key={index}>
-                        <CardHeader>
+                        <LeftColumn>
                             <UserAvatarComponent userId={offer.ownerId} userName={offer.ownerName} />
-                        </CardHeader>
-                        <CardBody>
                             <CardTitle>{offer.title}</CardTitle>
                             <CardText as="h6">{offer.author}</CardText>
                             <CardText>{offer.genre}</CardText>
                             <CardText><strong>Stan książki:</strong> {offer.bookCondition}</CardText>
-                            <CardText><strong>Preferowane książki:</strong> {offer.exchangeDescription}</CardText>
-                            <AcceptButton onClick={() => handleAcceptOffer(offer.exchangeId, offer.ownerId)}>Akceptuj</AcceptButton>
-
-                        </CardBody>
-                        <div>
-                            {offer.bookImage && (
-                                <>
-                                    <ImagePreview src={offer.bookImage} alt="Zdjęcie książki" onClick={() => handleImageClick(offer.bookImage)} />
-                                </>
-                            )}
-                        </div>
+                            <CardText><strong>Preferowane książki:</strong> {offer.preferredBooksDescription}</CardText>
+                            <CardText><strong>Opis wymiany:</strong> {offer.exchangeDescription}</CardText>
+                            <div>
+                                {offer.preferredBooksList.map((book, index) => (
+                                    <Hashtag key={index} onClick={() => handleViewPreferredBookDetails(book)}>{book.title}</Hashtag>
+                                ))}
+                            </div>
+                        </LeftColumn>
+                        <RightColumn>
+                            <ImagePreview src={offer.bookImage || defaultBookImage} alt="Zdjęcie książki" onClick={() => handleImageClick(offer.bookImage || defaultBookImage)} />
+                            <ButtonContainer>
+                                <AcceptButton onClick={() => handleAcceptOffer(offer.exchangeId, offer.ownerId)}>Akceptuj</AcceptButton>
+                                <DetailsButton onClick={() => handleViewBookDetails(offer.title, offer.author, offer.genre)}>Szczegóły książki</DetailsButton>
+                            </ButtonContainer>
+                        </RightColumn>
                     </StyledCard>
                 ))}
             </OffersContainer>

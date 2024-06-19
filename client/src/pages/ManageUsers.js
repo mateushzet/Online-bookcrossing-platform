@@ -103,7 +103,11 @@ const Spinner = styled.div`
 `;
 
 const Button = styled.button`
-  background: ${({ variant }) => (variant === 'outline-primary' ? '#007bff' : variant === 'outline-danger' ? '#dc3545' : '#6c757d')};
+  background: ${({ variant }) => (
+      variant === 'outline-primary' ? '#007bff' : 
+      variant === 'outline-danger' ? '#dc3545' :
+      variant === 'outline-warning' ? '#ffc107' :
+      '#6c757d')};
   color: #fff;
   border: none;
   padding: 0.5rem 1rem;
@@ -111,7 +115,10 @@ const Button = styled.button`
   margin-right: 10px;
   cursor: pointer;
   &:hover {
-    background: ${({ variant }) => (variant === 'outline-primary' ? '#0056b3' : variant === 'outline-danger' ? '#c82333' : '#5a6268')};
+    background: ${({ variant }) => (variant === 'outline-primary' ? '#0056b3' :
+    variant === 'outline-danger' ? '#c82333' :
+    variant === 'outline-warning' ? '#ffc107' :
+    '#5a6268')};
   }
 `;
 
@@ -147,7 +154,7 @@ function ManageUsers() {
                 setStatusMessage('');
             } catch (error) {
                 console.error("Failed to fetch users:", error);
-                setStatusMessage('Failed to fetch users.');
+                setStatusMessage('Błąd pobierania użytkowników.');
             } finally {
                 setIsLoading(false);
             }
@@ -184,13 +191,37 @@ function ManageUsers() {
             });
     };
 
+    const banUser = (userId) => {
+        axios.delete('http://localhost:8080/api/admin/banUser', { params: { userId } })
+            .then(() => {
+                setUsers(users.map(user => user.userId === userId ? { ...user, active: false } : user));
+                setStatusMessage('Użytkownik został zablokowany.');
+            })
+            .catch(error => {
+                console.error("Failed to ban user:", error);
+                setStatusMessage('Błąd podczas blokowania użytkownika.');
+            });
+    };
+
+    const unbanUser = (userId) => {
+        axios.delete('http://localhost:8080/api/admin/unbanUser', { params: { userId } })
+            .then(() => {
+                setUsers(users.map(user => user.userId === userId ? { ...user, active: true } : user));
+                setStatusMessage('Użytkownik został odblokowany.');
+            })
+            .catch(error => {
+                console.error("Failed to unban user:", error);
+                setStatusMessage('Błąd podczas odblokowywania użytkownika.');
+            });
+    };
+
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
     const nextPage = () => setCurrentPage(prev => prev < Math.ceil(users.length / usersPerPage) ? prev + 1 : prev);
     const prevPage = () => setCurrentPage(prev => prev > 1 ? prev - 1 : prev);
 
     const renderPaginationItems = (currentPage, totalPages) => {
         let items = [];
-        const pageLimit = 5; // Adjust this for more or fewer visible page links
+        const pageLimit = 5;
         let startPage = currentPage - Math.floor(pageLimit / 2);
         let endPage = currentPage + Math.floor(pageLimit / 2);
 
@@ -220,9 +251,8 @@ function ManageUsers() {
     return (
         <Container>
             <Header>
-                <HeaderTitle>Manage Users</HeaderTitle>
+                <HeaderTitle>Zarządzanie użytkownikami</HeaderTitle>
             </Header>
-            {statusMessage && <Alert>{statusMessage}</Alert>}
             {isLoading ? (
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <Spinner />
@@ -233,10 +263,10 @@ function ManageUsers() {
                         <Table>
                             <thead>
                             <tr>
-                                <th>Username</th>
+                                <th>Login</th>
                                 <th>Email</th>
-                                <th>Role</th>
-                                <th>Actions</th>
+                                <th>Rola</th>
+                                <th>Akcje</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -261,23 +291,29 @@ function ManageUsers() {
                                             value={user.role}
                                             onChange={(e) => handleFieldChange(user.userId, 'role', e.target.value)}
                                         >
-                                            <option value="ROLE_USER">User</option>
+                                            <option value="ROLE_USER">Użytkownik</option>
                                             <option value="ROLE_ADMIN">Admin</option>
                                         </Select>
                                     </td>
                                     <td>
-                                        <Button variant="outline-primary" onClick={() => modifyUser(user)}>Modify</Button>
-                                        <Button variant="outline-danger" onClick={() => deleteUser(user.userId)}>Delete</Button>
+                                        <Button variant="outline-primary" onClick={() => modifyUser(user)}>Modyfikuj</Button>
+                                        <Button variant="outline-danger" onClick={() => deleteUser(user.userId)}>Usuń</Button>
+                                        {user.active ? (
+                                        <Button variant="outline-danger" onClick={() => banUser(user.userId)}>Zablokuj</Button>
+                                        ) : (
+                                        <Button variant="outline-warning" onClick={() => unbanUser(user.userId)}>Odblokuj</Button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
                             </tbody>
                         </Table>
+                        {statusMessage && <Alert>{statusMessage}</Alert>}
                     </TableContainer>
                     <PaginationContainer>
-                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Previous</PaginationButton>
+                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Poprzednia</PaginationButton>
                         {paginationItems}
-                        <PaginationButton onClick={nextPage} disabled={currentPage === Math.ceil(users.length / usersPerPage)}>Next</PaginationButton>
+                        <PaginationButton onClick={nextPage} disabled={currentPage === Math.ceil(users.length / usersPerPage)}>Następna</PaginationButton>
                     </PaginationContainer>
                 </>
             )}

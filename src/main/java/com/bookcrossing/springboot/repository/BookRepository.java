@@ -1,6 +1,7 @@
 package com.bookcrossing.springboot.repository;
 
 import com.bookcrossing.springboot.dto.BookDTO;
+import com.bookcrossing.springboot.dto.UserDTO;
 import com.bookcrossing.springboot.model.Book;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +15,9 @@ import java.util.Optional;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    @Query("SELECT new com.bookcrossing.springboot.dto.BookDTO(b.bookId, b.title, b.author, b.isbn, b.genre) FROM Book b")
+    @Query("SELECT new com.bookcrossing.springboot.dto.BookDTO(b.bookId, b.title, b.author, b.isbn, b.genre, b.addedBy, " +
+            "b.physicalDescription, b.subjectHeadings, b.corporateNames, b.personalNames, b.seriesStatements, " +
+            "b.generalNotes, b.summary, b.tableOfContents, b.languageCode, b.originalLanguage, b.publicationYear) FROM Book b")
     List<BookDTO> findAllBook();
 
     @Query("SELECT new com.bookcrossing.springboot.dto.BookDTO(b.bookId, b.title, b.author, b.isbn, b.genre) " +
@@ -31,5 +34,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             Pageable pageable);
 
     List<Book> findByTitleAndAuthor(String title, String Author);
+
+    void deleteByBookId(int bookId);
 
 }

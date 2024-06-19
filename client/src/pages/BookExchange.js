@@ -7,8 +7,7 @@ import Recaptcha from 'react-google-recaptcha';
 const Container = styled.div`
   margin: auto;
   height: 100%;
-  width: 100%;
-  max-width: 1200px;
+  width: 90%;
 `;
 
 const Card = styled.div`
@@ -35,6 +34,7 @@ const CardBody = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  width: 100%;
 `;
 
 const CardBodyColumn = styled.div`
@@ -45,7 +45,12 @@ const CardBodyColumn = styled.div`
 `;
 
 const Column = styled.div`
-  flex: 1;
+  flex: 0 0 30%;
+  min-width: 200px;
+`;
+
+const Column2 = styled.div`
+  flex: 0 0 68%;
   min-width: 200px;
 `;
 
@@ -100,7 +105,7 @@ const TextArea = styled.textarea`
   border: 1px solid #ccc;
   border-radius: 5px;
   transition: border-color 0.3s;
-  height: 400px; /* Set the default height here */
+  height: 150px;
   &:focus {
     border-color: #627254;
   }
@@ -305,6 +310,16 @@ function BookExchange() {
         genre: '',
         image: null,
         imagePreviewUrl: null,
+        physicalDescription: '',
+        subject: '',
+        corporateNames: '',
+        personalNames: '',
+        series: '',
+        notes: '',
+        summary: '',
+        tableOfContents: '',
+        language: '',
+        originalLanguage: ''
     });
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -315,6 +330,7 @@ function BookExchange() {
     const [captchaVerifiedExchange, setCaptchaVerifiedExchange] = useState(false);
 
     const [preferredBooks, setPreferredBooks] = useState([]);
+    const [showAdvancedDetails, setShowAdvancedDetails] = useState(false);
 
     const genres = ["Biznes", "Podręczniki", "Humor", "Powieść", "Romans", "Biografia", "Fantastyka", "Filozofia", "Literatura podróżnicza", "Nauka", "Komiks", "Informatyka", "Poradniki", "Horror", "Publicystyka", "Kryminał", "Literatura młodzieżowa", "Poezja", "Historia", "Literatura dziecięca"];
     const bookConditions = ["Nowa", "Bardzo dobry", "Dobry", "Akceptowalny", "Uszkodzona"];
@@ -331,6 +347,8 @@ function BookExchange() {
         selectedGenre: '',
         selectedCondition: '',
         selectedPreferredBooks: '',
+        exchangeDescription: '',
+        preferredBooksDescription: '',
     });
 
     const handleCloseModal = () => {
@@ -384,6 +402,8 @@ function BookExchange() {
             selectedGenre: '',
             selectedCondition: '',
             selectedPreferredBooks: '',
+            exchangeDescription: '',
+            preferredBooksDescription: ''
         }));
         setMessage(null);
         setCaptchaVerifiedExchange(false);
@@ -418,11 +438,15 @@ function BookExchange() {
 
             reader.readAsDataURL(file);
         } else if (name.startsWith('selected')) {
-            setSelectedBook(prev => ({ ...prev, [name]: value }));
+            setSelectedBook(prev => ({ ...prev, [name]: value.trim() }));
+        } else if (name === 'exchangeDescription') {
+            setSelectedBook(prev => ({ ...prev, exchangeDescription: value }));
+        } else if (name === 'preferredBooksDescription') {
+            setSelectedBook(prev => ({ ...prev, preferredBooksDescription: value }));
         } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
+            setFormData(prev => ({ ...prev, [name]: value.trim() }));
             if (['bookTitle', 'authorName', 'isbn', 'genre'].includes(name)) {
-                const newFormData = { ...formData, [name]: value };
+                const newFormData = { ...formData, [name]: value.trim() };
                 fetchBooks(newFormData.bookTitle, newFormData.authorName, newFormData.isbn, newFormData.genre);
             }
         }
@@ -431,20 +455,21 @@ function BookExchange() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedBook.selectedBookId || !selectedBook.selectedCondition) {
-            setMessage('Please choose the book and fill all required fields before submitting!');
+            setMessage('Przed przesłaniem wybierz książkę i wypełnij wszystkie wymagane pola!');
             return;
         }
-        const { selectedBookId, selectedCondition } = selectedBook;
+        const { selectedBookId, selectedCondition, exchangeDescription, preferredBooksDescription } = selectedBook;
         const encodedBookId = encodeURIComponent(selectedBookId);
         const encodedCondition = encodeURIComponent(selectedCondition);
         const encodedPreferredBooks = encodeURIComponent(preferredBooks.map(book => book.bookId).join(','));
+        const encodedExchangeDescription = encodeURIComponent(exchangeDescription);
+        const encodedPreferredBooksDescription = encodeURIComponent(preferredBooksDescription);
 
-        const url = `http://localhost:8080/api/user/submitExchange?bookId=${encodedBookId}&bookCondition=${encodedCondition}&preferredBooks=${encodedPreferredBooks}`;
+        const url = `http://localhost:8080/api/user/submitExchange?bookId=${encodedBookId}&bookCondition=${encodedCondition}
+        &preferredBooks=${encodedPreferredBooks}&exchangeDescription=${encodedExchangeDescription}&preferredBooksDescription=${encodedPreferredBooksDescription}`;
 
         const formDataToSubmit = new FormData();
-        formDataToSubmit.append('bookId', selectedBookId);
-        formDataToSubmit.append('bookCondition', selectedCondition);
-        formDataToSubmit.append('preferredBooks', preferredBooks.map(book => book.bookId).join(','));
+
         if (formData.image) {
             formDataToSubmit.append('image', formData.image);
         }
@@ -461,7 +486,7 @@ function BookExchange() {
             setCaptchaVerifiedExchange(false);
         } catch (error) {
             console.error('Failed to submit exchange:', error);
-            setMessage('Failed to send exchange proposal. Please try again.');
+            setMessage('Nie udało się wysłać propozycji wymiany. Proszę spróbuj ponownie.');
         }
     };
 
@@ -484,9 +509,9 @@ function BookExchange() {
     };
 
     const handleSubmitNewBook = async (e) => {
-        e.preventDefault(); // Prevent the form from submitting the default way
+        e.preventDefault();
         if (!formData.bookTitle || !formData.authorName || !formData.genre) {
-            setMessage('Please fill all required fields.');
+            setMessage('Proszę wypełnić wszystkie wymagane pola.');
             return;
         }
 
@@ -494,22 +519,32 @@ function BookExchange() {
         const encodedAuthorName = encodeURIComponent(formData.authorName);
         const encodedGenre = encodeURIComponent(formData.genre);
         const encodedIsbn = encodeURIComponent(formData.isbn);
+        const encodedPhysicalDescription = encodeURIComponent(formData.physicalDescription);
+        const encodedSubject = encodeURIComponent(formData.subject);
+        const encodedCorporateNames = encodeURIComponent(formData.corporateNames);
+        const encodedPersonalNames = encodeURIComponent(formData.personalNames);
+        const encodedSeries = encodeURIComponent(formData.series);
+        const encodedNotes = encodeURIComponent(formData.notes);
+        const encodedSummary = encodeURIComponent(formData.summary);
+        const encodedTableOfContents = encodeURIComponent(formData.tableOfContents);
+        const encodedLanguage = encodeURIComponent(formData.language);
+        const encodedOriginalLanguage = encodeURIComponent(formData.originalLanguage);
 
-        const url = `http://localhost:8080/api/user/addBook?title=${encodedBookTitle}&author=${encodedAuthorName}&genre=${encodedGenre}&isbn=${encodedIsbn}`;
+        const url = `http://localhost:8080/api/user/addBook?title=${encodedBookTitle}&author=${encodedAuthorName}&genre=${encodedGenre}&isbn=${encodedIsbn}&physicalDescription=${encodedPhysicalDescription}&subject=${encodedSubject}&corporateNames=${encodedCorporateNames}&personalNames=${encodedPersonalNames}&series=${encodedSeries}&notes=${encodedNotes}&summary=${encodedSummary}&tableOfContents=${encodedTableOfContents}&language=${encodedLanguage}&originalLanguage=${encodedOriginalLanguage}`;
 
         try {
             const response = await axios.post(url);
-            setMessage('Book has been successfully added.');
+            setMessage('Książka została pomyślnie dodana.');
             setFormType('search');
             fetchBooks(formData.bookTitle, formData.authorName, formData.isbn, formData.genre);
             setCaptchaVerifiedBook(false);
         } catch (error) {
-            if (error.data === 'There is already book with this title and author') {
+            if (error.response && error.response.data === 'There is already book with this title and author') {
                 console.error('Failed to add book:', error);
-                setMessage('There is already book with this title and author');
+                setMessage('Istnieje już książka o tym tytule i autorze');
             } else {
                 console.error('Failed to add book:', error);
-                setMessage('Failed to add book. Please try again.');
+                setMessage('Nie udało się dodać książki. Proszę spróbuj ponownie.');
             }
         }
     };
@@ -542,6 +577,10 @@ function BookExchange() {
         return () => clearInterval(intervalId);
     }, []);
 
+    const handleToggleAdvancedDetails = () => {
+        setShowAdvancedDetails(!showAdvancedDetails);
+    };
+
     return (
         <Container>
             <Form onSubmit={handleSubmit}>
@@ -551,33 +590,6 @@ function BookExchange() {
                     </CardHeader>
                     <CardBody>
                         <Column>
-                            <>
-                                <FormGroup>
-                                    <Label>Tytuł książki</Label>
-                                    <CardText>{selectedBook.selectedBookTitle}</CardText>
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label>Autor</Label>
-                                    <CardText>{selectedBook.selectedAuthorName}</CardText>
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label>Gatunek</Label>
-                                    <CardText>{selectedBook.selectedGenre}</CardText>
-                                </FormGroup>
-                                <FormGroup>
-                                    <Label htmlFor="image">Dodaj zdjęcie książki</Label>
-                                    <Input
-                                        type="file"
-                                        id="image"
-                                        name="image"
-                                        accept="image/*"
-                                        onChange={handleChange}
-                                    />
-                                    {formData.imagePreviewUrl && (
-                                        <ImagePreview src={formData.imagePreviewUrl} alt="Podgląd zdjęcia książki" />
-                                    )}
-                                </FormGroup>
-                            </>
                             <FormGroup>
                                 <>
                                     <Label htmlFor="condition">Stan książki</Label>
@@ -597,19 +609,56 @@ function BookExchange() {
                                     </Select>
                                 </>
                             </FormGroup>
+                            <>
+                                <FormGroup>
+                                    <Label htmlFor="image">Dodaj zdjęcie książki</Label>
+                                    <Input
+                                        type="file"
+                                        id="image"
+                                        name="image"
+                                        accept="image/*"
+                                        onChange={handleChange}
+                                    />
+                                    {formData.imagePreviewUrl && (
+                                        <ImagePreview src={formData.imagePreviewUrl} alt="Podgląd zdjęcia książki" />
+                                    )}
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Tytuł książki</Label>
+                                    <CardText>{selectedBook.selectedBookTitle}</CardText>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Autor</Label>
+                                    <CardText>{selectedBook.selectedAuthorName}</CardText>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Gatunek</Label>
+                                    <CardText>{selectedBook.selectedGenre}</CardText>
+                                </FormGroup>
+                            </>
                             <FormGroup>
                                 <Button primary type="button" onClick={handleImageClick}>
                                     {selectedBook.selectedBookId ? 'Zmień książkę' : 'Wybierz książkę'}
                                 </Button>
                             </FormGroup>
                         </Column>
-                        <Column>
+                        <Column2>
                             <FormGroup>
-                                <Label htmlFor="preferredBooks">Preferowane książki do wymiany</Label>
+                                <Label htmlFor="exchangeDescription">Opis oferty wymiany</Label>
                                 <TextArea
-                                    id="preferredBooks"
-                                    name="selectedPreferredBooks"
-                                    value={selectedBook.selectedPreferredBooks}
+                                    id="exchangeDescription"
+                                    name="exchangeDescription"
+                                    value={selectedBook.exchangeDescription}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </FormGroup>
+                            <FormGroup>
+                                <Label htmlFor="preferredBooksDescription">Preferowane książki do wymiany</Label>
+                                <TextArea
+                                    id="preferredBooksDescription"
+                                    name="preferredBooksDescription"
+                                    value={selectedBook.preferredBooksDescription}
                                     onChange={handleChange}
                                     required
                                 />
@@ -623,7 +672,7 @@ function BookExchange() {
                                     ))}
                                 </div>
                             </FormGroup>
-                        </Column>
+                        </Column2>
                     </CardBody>
                     {message && !showModal && <Alert>{message}</Alert>}
                     <ModalFooter>
@@ -800,6 +849,113 @@ function BookExchange() {
                                                     ))}
                                                 </Select>
                                             </FormGroup>
+                                            <Button type="button" onClick={handleToggleAdvancedDetails}>
+                                                {showAdvancedDetails ? 'Ukryj szczegóły' : 'Dodatkowe szczegóły'}
+                                            </Button>
+                                            {showAdvancedDetails && (
+                                                <>
+                                                    <FormGroup>
+                                                        <Label htmlFor="physicalDescription">Opis fizyczny (liczba stron)</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="physicalDescription"
+                                                            name="physicalDescription"
+                                                            value={formData.physicalDescription}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="subject">Tematyka</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="subject"
+                                                            name="subject"
+                                                            value={formData.subject}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="corporateNames">Wydawnictwo</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="corporateNames"
+                                                            name="corporateNames"
+                                                            value={formData.corporateNames}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="personalNames">Współtwórcy</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="personalNames"
+                                                            name="personalNames"
+                                                            value={formData.personalNames}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="series">Nazwa serii</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="series"
+                                                            name="series"
+                                                            value={formData.series}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="notes">Dodatkowe uwagi</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="notes"
+                                                            name="notes"
+                                                            value={formData.notes}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="summary">Streszczenie</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="summary"
+                                                            name="summary"
+                                                            value={formData.summary}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="tableOfContents">Spis treści</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="tableOfContents"
+                                                            name="tableOfContents"
+                                                            value={formData.tableOfContents}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="language">Język</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="language"
+                                                            name="language"
+                                                            value={formData.language}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                    <FormGroup>
+                                                        <Label htmlFor="originalLanguage">Język oryginalny</Label>
+                                                        <Input
+                                                            type="text"
+                                                            id="originalLanguage"
+                                                            name="originalLanguage"
+                                                            value={formData.originalLanguage}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </FormGroup>
+                                                </>
+                                            )}
                                             <CaptchaAndButton>
                                                 <Recaptcha
                                                     sitekey="6LeUONcpAAAAAL5fYacJIwfTFX3v8jTpE0nwWbPQ"

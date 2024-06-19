@@ -3,21 +3,45 @@ import { Container, Card, Button, ListGroup, Form, Alert, Modal } from 'react-bo
 import { Rating } from '@mui/material';
 import axios from "axios";
 import UserProfileAvatarComponent from '../components/UserProfileAvatarComponent';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const customIcon = new L.Icon({
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
 
 function UserProfile({ show, onHide }) {
-    const [user, setUser] = useState({ username: '', email: '', phone: '', emailNotifications: false });
+    const [user, setUser] = useState({ username: '', email: '', phone: '', emailNotifications: false, city: '', lat: 52.237049, lng: 19.015615 });
+    const [tempLocation, setTempLocation] = useState({ lat: user.lat, lng: user.lng });
+    const [tempCity, setTempCity] = useState(user.city);
     const [editMode, setEditMode] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
     const [validationError, setValidationError] = useState('');
     const [rating, setRating] = useState(0);
     const [ratingValue, setRatingValue] = useState(0);
-    const [avatarUpdated, setAvatarUpdated] = useState(false); // To force avatar reload
+    const [avatarUpdated, setAvatarUpdated] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const userResponse = await axios.get('http://localhost:8080/api/user/getUser');
-                setUser(userResponse.data);
+                setUser(prevUser => ({
+                    ...prevUser,
+                    ...userResponse.data,
+                    lat: userResponse.data.lat || 52.237049,
+                    lng: userResponse.data.lng || 19.015615
+                }));
+
+                setTempLocation({ lat: userResponse.data.lat || 52.237049, lng: userResponse.data.lng || 19.015615 });
+                setTempCity(userResponse.data.city || '');
 
                 const ratingResponse = await axios.get('http://localhost:8080/api/user/getUserRating');
                 const averageRating = ratingResponse.data;
@@ -54,13 +78,25 @@ function UserProfile({ show, onHide }) {
             return;
         }
 
+        setUser(prevState => ({
+            ...prevState,
+            lat: tempLocation.lat,
+            lng: tempLocation.lng,
+            city: tempCity
+        }));
+
         try {
-            const response = await axios.put('http://localhost:8080/api/user/modifyUserDetails', user);
-            setStatusMessage('Profile updated successfully.');
+            const response = await axios.put('http://localhost:8080/api/user/modifyUserDetails', {
+                ...user,
+                lat: tempLocation.lat,
+                lng: tempLocation.lng,
+                city: tempCity
+            });
+            setStatusMessage('Profil pomyślnie zaktualizowany.');
             setEditMode(false);
         } catch (error) {
             console.error("Failed to update user profile:", error);
-            setStatusMessage('Error updating profile.');
+            setStatusMessage('Błąd podczas aktualizacji profilu');
         }
     };
 
@@ -86,10 +122,36 @@ function UserProfile({ show, onHide }) {
         }
     };
 
+    const geocodeLocation = async (lat, lng) => {
+        try {
+            const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const city = response.data.address.city || response.data.address.town || response.data.address.village || '';
+            setTempCity(city);
+        } catch (error) {
+            console.error("Geocoding failed:", error);
+        }
+    };
+
+    const LocationMarker = () => {
+        const map = useMapEvents({
+            click(e) {
+                setTempLocation({
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng
+                });
+                geocodeLocation(e.latlng.lat, e.latlng.lng);
+            }
+        });
+
+        return tempLocation ? (
+            <Marker position={tempLocation} icon={customIcon}></Marker>
+        ) : null;
+    };
+
     return (
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
-                <Modal.Title>Profile Details</Modal.Title>
+                <Modal.Title>Moje Dane</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div className="text-center mb-3">
@@ -102,7 +164,7 @@ function UserProfile({ show, onHide }) {
                     )}
                 </div>
                 <ListGroup>
-                    <ListGroup.Item>Username: {user.username}</ListGroup.Item>
+                    <ListGroup.Item>Login: {user.username}</ListGroup.Item>
                     <ListGroup.Item>
                         Email: {editMode ? (
                         <Form.Control
@@ -115,7 +177,7 @@ function UserProfile({ show, onHide }) {
                     ) : user.email}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                        Phone: {editMode ? (
+                        Telefon: {editMode ? (
                         <Form.Control
                             type="tel"
                             name="phone"
@@ -125,6 +187,41 @@ function UserProfile({ show, onHide }) {
                         />
                     ) : (user.phone || 'Add number')}
                     </ListGroup.Item>
+                    <ListGroup.Item>
+                        Miasto: {editMode ? (
+                        <Form.Control
+                            type="text"
+                            name="city"
+                            placeholder="Wybierz miasto na mapie"
+                            value={tempCity}
+                            onChange={handleInputChange}
+                            readOnly
+                        />
+                    ) : (user.city || 'Dodaj miasto')}
+                    </ListGroup.Item>
+                    {editMode && (
+                        <ListGroup.Item>
+                            Lokalizacja:
+                            <div>
+                                <MapContainer
+                                    style={{ height: "200px", width: "100%" }}
+                                    center={[tempLocation.lat, tempLocation.lng]}
+                                    zoom={6}
+                                >
+                                    <TileLayer
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    />
+                                    <LocationMarker />
+                                </MapContainer>
+                                <Form.Control
+                                    type="hidden"
+                                    name="location"
+                                    value={`${tempLocation.lat},${tempLocation.lng}`}
+                                />
+                            </div>
+                        </ListGroup.Item>
+                    )}
                     <ListGroup.Item>
                         Wysyłanie powiadomień email: {editMode ? (
                         <Form.Check
@@ -150,7 +247,11 @@ function UserProfile({ show, onHide }) {
                 {editMode ? (
                     <>
                         <Button variant="primary" onClick={handleSave}>Save</Button>
-                        <Button variant="secondary" onClick={() => setEditMode(false)}>Cancel</Button>
+                        <Button variant="secondary" onClick={() => {
+                            setEditMode(false);
+                            setTempLocation({ lat: user.lat, lng: user.lng });
+                            setTempCity(user.city);
+                        }}>Cancel</Button>
                     </>
                 ) : (
                     <Button variant="secondary" onClick={() => setEditMode(true)}>Edit</Button>

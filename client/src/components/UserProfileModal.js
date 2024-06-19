@@ -40,8 +40,6 @@ function UserProfileModal({ userId, show, onHide }) {
             <Modal.Body>
                 <ListGroup>
                     <ListGroup.Item>Nazwa: {user.username}</ListGroup.Item>
-                    <ListGroup.Item>Email: {user.email}</ListGroup.Item>
-                    <ListGroup.Item>Telefon: {user.phone}</ListGroup.Item>
                     <ListGroup.Item>
                         Ocena profilu:
                         <div style={{ display: 'flex', alignItems: 'center' }}>

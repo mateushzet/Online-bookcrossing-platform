@@ -24,7 +24,7 @@ const Header = styled.div`
   color: #fff;
   text-align: center;
   border-radius: 1rem 1rem 0 0;
-  flex-shrink: 0; /* Prevents shrinking */
+  flex-shrink: 0;
 `;
 
 const HeaderTitle = styled.h1`
@@ -33,9 +33,9 @@ const HeaderTitle = styled.h1`
 `;
 
 const Content = styled.div`
-  flex: 1; /* Allow this section to grow and take remaining space */
-  overflow-y: auto; /* Make this section scrollable */
-  padding: 2rem; /* Padding for content */
+  flex: 1;
+  overflow-y: auto; 
+  padding: 2rem;
 `;
 
 const CarouselContainer = styled.div`
@@ -52,7 +52,7 @@ const Image = styled.img`
 
 const WelcomeText = styled.p`
   font-size: 1.2rem;
-  color: #76885B;
+  color: black;
   text-align: center;
   margin: 2rem 0;
 `;
@@ -85,7 +85,7 @@ const Title = styled.h2`
 
 const Description = styled.p`
   font-size: 1rem;
-  color: #76885B;
+  color: black;
 `;
 
 const CenteredContainer = styled.div`
@@ -136,7 +136,7 @@ const responsive = {
 };
 
 function Home() {
-    const images = Array.from({ length: 11 }, (_, i) => `/photo-books-${i + 1}.jpg`);
+    const images = Array.from({ length: 14 }, (_, i) => `/photo-books-${i + 1}.webp`);
 
     return (
         <Container>
@@ -172,17 +172,17 @@ function Home() {
                     <Feature>
                         <Icon><FontAwesomeIcon icon={faBookOpen} /></Icon>
                         <Title>Odkrywaj</Title>
-                        <Description>Przeglądaj szeroki wybór książek dostępnych do wymiany.</Description>
+                        <Description>Przeglądaj szeroki wybór książek dostępnych do wymiany i znajdź swoje ulubione tytuły.</Description>
                     </Feature>
                     <Feature>
                         <Icon><FontAwesomeIcon icon={faExchangeAlt} /></Icon>
                         <Title>Wymieniaj</Title>
-                        <Description>Wymieniaj się swoimi książkami z innymi czytelnikami i odkrywaj nowe ulubione pozycje.</Description>
+                        <Description>Wymieniaj swoje książki z innymi czytelnikami i odkrywaj nowe fascynujące pozycje.</Description>
                     </Feature>
                     <Feature>
                         <Icon><FontAwesomeIcon icon={faUsers} /></Icon>
                         <Title>Społeczność</Title>
-                        <Description>Połącz się z osobami o podobnych zainteresowaniach czytelniczych i podziel się swoją pasją do książek.</Description>
+                        <Description>Połącz się z osobami o podobnych zainteresowaniach i dziel się pasją do książek.</Description>
                     </Feature>
                 </FeaturesContainer>
                 <CenteredContainer>

@@ -15,27 +15,27 @@ function SignUpPage() {
 
     const handleSignup = async () => {
         if (!username || !email || !password || !confirmPassword) {
-            setError('Please fill in all fields.');
+            setError('Wypełnij wszystkie pola.');
             return;
         }
 
         if (!validateUsername(username)) {
-            setError('Username must be 3-20 characters long and can only contain alphanumeric characters, dashes, or underscores.');
+            setError('Nazwa użytkownika musi mieć od 3 do 20 znaków i może zawierać tylko znaki alfanumeryczne, myślniki i podkreślenia.');
             return;
         }
 
         if (!validateEmail(email)) {
-            setError('Please provide a valid email address.');
+            setError('Wprowadź poprawny adres e-mail.');
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match.");
+            setError("Hasła nie pasują do siebie.");
             return;
         }
 
         if (password.length < 8 || !/\d/.test(password) || !/[!@#$%^&*]/.test(password)) {
-            setError("Password must be at least 8 characters long and include numbers and special characters.");
+            setError("Hasło musi mieć co najmniej 8 znaków i zawierać cyfry oraz znaki specjalne.");
             return;
         }
 
@@ -48,7 +48,7 @@ function SignUpPage() {
 
             localStorage.setItem('token', response.data.jwt);
             axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.jwt}`;
-            setIsRegistered(true);  // Set registered to true to hide form and show message
+            setIsRegistered(true);
         } catch (error) {
             console.error('Signup failed:', error.response ? error.response.data : error.message);
             setError(error.response.data);
@@ -70,56 +70,56 @@ function SignUpPage() {
             <Card style={{ width: '22rem' }}>
                 <Card.Body>
                     {isRegistered ? (
-                        <Alert variant="success">Confirm registration on your email.</Alert>
+                        <Alert variant="success">Potwierdź swoją rejestrację klikając w link wysłany na Twój adres e-mail</Alert>
                     ) : (
                         <>
-                            <Card.Title className="text-center mb-4">Sign Up</Card.Title>
+                            <Card.Title className="text-center mb-4">Zarejestruj</Card.Title>
                             {error && <Alert variant="danger">{error}</Alert>}
                             <Form>
                                 <Form.Group className="mb-3" controlId="username">
-                                    <Form.Label>Username</Form.Label>
+                                    <Form.Label>Nazwa użytkownika</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Username"
+                                        placeholder="Wprowadź nazwę użytkownika"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                     />
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="email">
-                                    <Form.Label>Email address</Form.Label>
+                                    <Form.Label>Adres email</Form.Label>
                                     <Form.Control
                                         type="email"
-                                        placeholder="Enter email"
+                                        placeholder="Wprowadź adres email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="password">
-                                    <Form.Label>Password</Form.Label>
+                                    <Form.Label>Hasło</Form.Label>
                                     <Form.Control
                                         type="password"
-                                        placeholder="Password"
+                                        placeholder="Hasło"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                     />
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="confirmPassword">
-                                    <Form.Label>Confirm Password</Form.Label>
+                                    <Form.Label>Potwierdź hasło</Form.Label>
                                     <Form.Control
                                         type="password"
-                                        placeholder="Confirm Password"
+                                        placeholder="Potwierdź hasło"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
                                 </Form.Group>
                                 <Button variant="primary" onClick={handleSignup} className="w-100">
-                                    Sign Up
+                                    Zarejestruj
                                 </Button>
                             </Form>
                         </>
                     )}
                     <div className="text-center mt-3">
-                        <p>Already registered? <a href="/login">Login</a></p>
+                        <p>Posiadasz już konto? <a href="/login">Login</a></p>
                     </div>
                 </Card.Body>
             </Card>

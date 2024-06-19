@@ -31,15 +31,7 @@ public class MessageController {
         this.userService = userService;
     }
 
-    @GetMapping("/messages/{exchangeId}")
-    public ResponseEntity<List<Message>> getMessagesByOfferId(@PathVariable Long exchangeId, Long userId) {
 
-
-        int requestingUserId = getUserIdFromToken(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
-            List<Message> messages = messageService.getExchangeMessages(exchangeId, requestingUserId, userId);
-            return ResponseEntity.ok(messages);
-
-    }
 
     @PostMapping("/sendMessage")
     public ResponseEntity<Message> sendMessage(@RequestBody MessageDTO messageDTO, HttpServletRequest request) {
@@ -78,4 +70,12 @@ public class MessageController {
         }
         return user.getUserId();
     }
+
+    @GetMapping("/messages/{exchangeId}")
+    public List<MessageDTO> getMessages(@PathVariable Long exchangeId, @RequestParam Long userId, @RequestParam Long ownerId) {
+        Long requestingUserId = Long.valueOf(getUserIdFromToken(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()));
+        if(userId == ownerId) return messageService.getMessages(exchangeId, userId, requestingUserId);
+        else return messageService.getMessages(exchangeId, userId, ownerId);
+    }
+
 }

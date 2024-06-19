@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import { useLocation } from 'react-router-dom';
 
 const Container = styled.div`
   margin: auto;
@@ -10,7 +11,6 @@ const Container = styled.div`
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 1rem;
   color: black;
-  max-width: 1200px;
 `;
 
 const Header = styled.div`
@@ -45,10 +45,12 @@ const Table = styled.table`
   th, td {
     padding: 1rem;
     border: 1px solid #dee2e6;
+    min-width: 300px;
   }
 
   tbody tr:nth-child(even) {
     background-color: #f2f2f2;
+    min-width: 300px;
   }
 `;
 
@@ -146,6 +148,31 @@ const Input = styled.input`
   border-radius: 0.25rem;
 `;
 
+const Alert = styled.div`
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-color: #bee5eb;
+`;
+
+const Spinner = styled.div`
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
 function Books() {
     const [books, setBooks] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -154,6 +181,25 @@ function Books() {
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [inputPage, setInputPage] = useState('');
+    const [filters, setFilters] = useState({
+        title: '',
+        author: '',
+        genre: '',
+        isbn: '',
+        physicalDescription: '',
+        subjectHeadings: '',
+        corporateNames: '',
+        personalNames: '',
+        seriesStatements: '',
+        generalNotes: '',
+        summary: '',
+        tableOfContents: '',
+        languageCode: '',
+        originalLanguage: '',
+        publicationYear: ''
+    });
+
+    const location = useLocation();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -173,7 +219,38 @@ function Books() {
         fetchData();
     }, []);
 
-    const totalPages = Math.ceil(books.length / booksPerPage);
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const title = queryParams.get('title') || '';
+        const author = queryParams.get('author') || '';
+        const genre = queryParams.get('genre') || '';
+        const isbn = queryParams.get('isbn') || '';
+
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            title,
+            author,
+            genre,
+            isbn,
+        }));
+    }, [location.search]);
+
+    const handleFilterChange = (field, value) => {
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [field]: value,
+        }));
+        setCurrentPage(1);
+    };
+
+    const filteredBooks = books.filter((book) => {
+        return Object.keys(filters).every((key) => {
+            if (!filters[key]) return true;
+            return book[key]?.toString().toLowerCase().includes(filters[key].toLowerCase());
+        });
+    });
+
+    const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
 
     const handlePageInput = () => {
         const pageNumber = Number(inputPage);
@@ -189,8 +266,8 @@ function Books() {
     };
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
-    const nextPage = () => setCurrentPage(prev => prev < totalPages ? prev + 1 : prev);
-    const prevPage = () => setCurrentPage(prev => prev > 1 ? prev - 1 : prev);
+    const nextPage = () => setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev));
+    const prevPage = () => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
 
     const renderPaginationItems = () => {
         let items = [];
@@ -255,7 +332,7 @@ function Books() {
                             <Input
                                 type="number"
                                 value={inputPage}
-                                onChange={e => setInputPage(e.target.value)}
+                                onChange={(e) => setInputPage(e.target.value)}
                                 min="1"
                                 max={totalPages}
                             />
@@ -268,7 +345,9 @@ function Books() {
                 </ModalBackground>
             )}
             {isLoading ? (
-                <p>Loading...</p>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Spinner />
+                </div>
             ) : error ? (
                 <p style={{ color: '#dc3545' }}>{error}</p>
             ) : (
@@ -277,23 +356,148 @@ function Books() {
                         <Table>
                             <thead>
                             <tr>
-                                <th>Book ID</th>
-                                <th>Title</th>
-                                <th>Author</th>
-                                <th>Description</th>
-                                <th>Genre</th>
-                                <th>ISBN</th>
+                                <th>ID Książki</th>
+                                <th>
+                                    Tytuł
+                                    <Input
+                                        type="text"
+                                        value={filters.title}
+                                        onChange={(e) => handleFilterChange('title', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Autor
+                                    <Input
+                                        type="text"
+                                        value={filters.author}
+                                        onChange={(e) => handleFilterChange('author', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Gatunek
+                                    <Input
+                                        type="text"
+                                        value={filters.genre}
+                                        onChange={(e) => handleFilterChange('genre', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    ISBN
+                                    <Input
+                                        type="text"
+                                        value={filters.isbn}
+                                        onChange={(e) => handleFilterChange('isbn', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Rok publikacji
+                                    <Input
+                                        type="text"
+                                        value={filters.publicationYear}
+                                        onChange={e => handleFilterChange('publicationYear', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Opis fizyczny
+                                    <Input
+                                        type="text"
+                                        value={filters.physicalDescription}
+                                        onChange={(e) => handleFilterChange('physicalDescription', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Tematyka
+                                    <Input
+                                        type="text"
+                                        value={filters.subjectHeadings}
+                                        onChange={(e) => handleFilterChange('subjectHeadings', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Wydawnictwo
+                                    <Input
+                                        type="text"
+                                        value={filters.corporateNames}
+                                        onChange={(e) => handleFilterChange('corporateNames', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Współtwórcy
+                                    <Input
+                                        type="text"
+                                        value={filters.personalNames}
+                                        onChange={(e) => handleFilterChange('personalNames', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Seria
+                                    <Input
+                                        type="text"
+                                        value={filters.seriesStatements}
+                                        onChange={(e) => handleFilterChange('seriesStatements', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Dodatkowe uwagi dot. książki
+                                    <Input
+                                        type="text"
+                                        value={filters.generalNotes}
+                                        onChange={(e) => handleFilterChange('generalNotes', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Streszczenie
+                                    <Input
+                                        type="text"
+                                        value={filters.summary}
+                                        onChange={(e) => handleFilterChange('summary', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Spis treści
+                                    <Input
+                                        type="text"
+                                        value={filters.tableOfContents}
+                                        onChange={(e) => handleFilterChange('tableOfContents', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Kod języka
+                                    <Input
+                                        type="text"
+                                        value={filters.languageCode}
+                                        onChange={(e) => handleFilterChange('languageCode', e.target.value)}
+                                    />
+                                </th>
+                                <th>
+                                    Język oryginalny
+                                    <Input
+                                        type="text"
+                                        value={filters.originalLanguage}
+                                        onChange={(e) => handleFilterChange('originalLanguage', e.target.value)}
+                                    />
+                                </th>
                             </tr>
                             </thead>
                             <tbody>
-                            {books.slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage).map((book) => (
+                            {filteredBooks.slice((currentPage - 1) * booksPerPage, currentPage * booksPerPage).map((book) => (
                                 <tr key={book.bookId}>
                                     <td>{book.bookId}</td>
                                     <td>{book.title}</td>
                                     <td>{book.author}</td>
-                                    <td>{book.description}</td>
                                     <td>{book.genre}</td>
                                     <td>{book.isbn}</td>
+                                    <td>{book.publicationYear}</td>
+                                    <td>{book.physicalDescription}</td>
+                                    <td>{book.subjectHeadings}</td>
+                                    <td>{book.corporateNames}</td>
+                                    <td>{book.personalNames}</td>
+                                    <td>{book.seriesStatements}</td>
+                                    <td>{book.generalNotes}</td>
+                                    <td>{book.summary}</td>
+                                    <td>{book.tableOfContents}</td>
+                                    <td>{book.languageCode}</td>
+                                    <td>{book.originalLanguage}</td>
                                 </tr>
                             ))}
                             </tbody>

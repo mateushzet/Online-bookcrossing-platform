@@ -29,7 +29,7 @@ const Header = styled.div`
   color: #fff;
   text-align: center;
   border-radius: 1rem 1rem 0 0;
-  flex-shrink: 0; /* Prevents shrinking */
+  flex-shrink: 0;
 `;
 
 const HeaderTitle = styled.h1`
@@ -38,9 +38,9 @@ const HeaderTitle = styled.h1`
 `;
 
 const Content = styled.div`
-  flex: 1; /* Allow this section to grow and take remaining space */
-  overflow-y: auto; /* Make this section scrollable */
-  padding: 2rem; /* Padding for content */
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
 `;
 
 const CarouselContainer = styled.div`
@@ -146,7 +146,7 @@ function LoginPage() {
     const handleShowLogin = () => setShowLogin(true);
     const handleCloseLogin = () => setShowLogin(false);
 
-    const images = Array.from({ length: 11 }, (_, i) => `/photo-books-${i + 1}.jpg`);
+    const images = Array.from({ length: 14 }, (_, i) => `/photo-books-${i + 1}.webp`);
 
     return (
         <Container>
@@ -212,15 +212,17 @@ function LoginModal({ show, handleClose }) {
     const navigate = useNavigate();
 
     const handleLogin = async () => {
+        localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
         try {
             if (!username || !password) {
-                setError('Please enter both username and password.');
+                setError('Proszę podać nazwę użytkownika i hasło.');
                 return;
             }
 
             const response = await axios.post('http://localhost:8080/auth/signin', { username, password });
 
-            console.log('Login successful:', response.data);
+            console.log('Logowanie zakończone sukcesem:', response.data);
             localStorage.setItem('token', response.data.jwt);
             if (response.data.jwt) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.jwt}`;
@@ -229,9 +231,9 @@ function LoginModal({ show, handleClose }) {
         } catch (error) {
             console.error('Login failed:', error.response ? error.response.data : error.message);
             if (error.response && error.response.status === 401) {
-                setError('Account is not active. Please check your email box.');
+                setError('Konto nie jest aktywne. Sprawdź swoją skrzynkę e-mail.');
             } else {
-                setError('Invalid username or password.');
+                setError('Nieprawidłowa nazwa użytkownika lub hasło.');
             }
         }
     };
@@ -239,38 +241,38 @@ function LoginModal({ show, handleClose }) {
     return (
         <Modal show={show} onHide={handleClose} centered>
             <Modal.Header closeButton>
-                <Modal.Title>Login</Modal.Title>
+                <Modal.Title>Logowanie</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form>
                     <Form.Group className="mb-3" controlId="username">
-                        <Form.Label>Username</Form.Label>
+                        <Form.Label>Nazwa użytkownika</Form.Label>
                         <Form.Control
                             type="text"
-                            placeholder="Enter username"
+                            placeholder="Nazwa użytkownika"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                         />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="password">
-                        <Form.Label>Password</Form.Label>
+                        <Form.Label>Hasło</Form.Label>
                         <Form.Control
                             type="password"
-                            placeholder="Password"
+                            placeholder="Hasło"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </Form.Group>
                     <Button variant="primary" type="button" onClick={handleLogin} className="w-100">
-                        Sign In
+                        Zaloguj
                     </Button>
                 </Form>
                 <div className="mt-3 text-center">
-                    <p>Not a member? <a href="/signup">Register now</a></p>
+                    <p>Nie posiadasz konta? <a href="/signup">Zarejestruj</a></p>
                 </div>
                 <div className="mt-3 text-center">
-                    <p>Forgot password? <a href="/forgotPassword">Reset password</a></p>
+                    <p>Zapomniałeś hasła? <a href="/forgotPassword">Resetuj hasło</a></p>
                 </div>
             </Modal.Body>
         </Modal>

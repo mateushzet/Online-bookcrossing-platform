@@ -7,6 +7,7 @@ import AdminPage from './pages/AdminPage';
 import PrivateRoute from './routing/PrivateRoute';
 import Layout from './components/Layout';
 import ManageUsers from "./pages/ManageUsers";
+import ManageBooks from "./pages/ManageBooks";
 import Books from "./pages/Books";
 import UserProfile from './pages/UserProfile';
 import BookExchange from './pages/BookExchange';
@@ -16,6 +17,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ConfirmAccountPage from "./pages/ConfirmAccountPage";
 import ExchangeOffers from "./pages/ExchangeOffers";
 import AcceptedExchanges from "./pages/AcceptedExchanges";
+import Map from "./pages/Map";
 
 
 function App() {
@@ -57,6 +59,13 @@ function App() {
                             </Layout>
                         </PrivateRoute>
                     } />
+                    <Route path="/manageBooks" element={
+                        <PrivateRoute isAdminRoute={true}>
+                            <Layout>
+                                <ManageBooks />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
                     <Route path="/books" element={
                         <PrivateRoute>
                             <Layout>
@@ -89,6 +98,13 @@ function App() {
                         <PrivateRoute>
                             <Layout>
                                 <AcceptedExchanges />
+                            </Layout>
+                        </PrivateRoute>
+                    } />
+                    <Route path="/map" element={
+                        <PrivateRoute>
+                            <Layout>
+                                <Map />
                             </Layout>
                         </PrivateRoute>
                     } />

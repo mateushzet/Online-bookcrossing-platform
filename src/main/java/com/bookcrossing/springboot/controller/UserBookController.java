@@ -40,7 +40,23 @@ public class UserBookController {
     }
 
     @PostMapping("/addBook")
-    public ResponseEntity<?> addBook(@RequestParam String title, String author, String isbn, String genre, HttpServletRequest request){
+    public ResponseEntity<?> addBook(
+            @RequestParam String title,
+            @RequestParam String author,
+            @RequestParam String isbn,
+            @RequestParam String genre,
+            @RequestParam(required = false) String physicalDescription,
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) String corporateNames,
+            @RequestParam(required = false) String personalNames,
+            @RequestParam(required = false) String series,
+            @RequestParam(required = false) String notes,
+            @RequestParam(required = false) String summary,
+            @RequestParam(required = false) String tableOfContents,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) String originalLanguage,
+            @RequestParam(required = false) String publicationYear,
+            HttpServletRequest request) {
 
         UserDTO user;
         String token = request.getHeader("Authorization");
@@ -56,11 +72,23 @@ public class UserBookController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Authorization token is missing or invalid");
         }
         Book newBook = new Book(title, author, isbn, genre, user.getUserId());
+        newBook.setPhysicalDescription(physicalDescription);
+        newBook.setSubjectHeadings(subject);
+        newBook.setCorporateNames(corporateNames);
+        newBook.setPersonalNames(personalNames);
+        newBook.setSeriesStatements(series);
+        newBook.setGeneralNotes(notes);
+        newBook.setSummary(summary);
+        newBook.setTableOfContents(tableOfContents);
+        newBook.setLanguageCode(language);
+        newBook.setOriginalLanguage(originalLanguage);
+        newBook.setPublicationYear(publicationYear);
+
         boolean bookInserted = userBookService.addBook(newBook);
         if (bookInserted) {
             return ResponseEntity.ok("Book has been inserted.");
         } else {
-            return ResponseEntity.badRequest().body("There is already book with this title and author");
+            return ResponseEntity.badRequest().body("There is already a book with this title and author");
         }
     }
 

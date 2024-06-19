@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import isAdminRole from "../utils/IsAdminRole";
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faExchangeAlt, faBook, faBookmark, faUserShield, faUser, faSignOutAlt, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faExchangeAlt, faBook, faBookmark, faUserShield, faUser, faSignOutAlt, faAngleLeft, faAngleRight, faMapMarkedAlt, faSyncAlt, faBell } from '@fortawesome/free-solid-svg-icons';
 import UserProfile from '../pages/UserProfile';
 
 const SidebarContainer = styled.aside`
@@ -20,6 +20,7 @@ const SidebarContainer = styled.aside`
   justify-content: space-between;
   transition: width 0.3s ease;
   overflow: hidden;
+  z-index: 1040;
 `;
 
 const GreenBar = styled.div`
@@ -54,7 +55,7 @@ const SidebarLink = styled(Nav.Link)`
   text-decoration: none;
   justify-content: flex-start;
   transition: padding 0.3s ease;
-  height: 50px; /* Fixed height to prevent vertical movement */
+  height: 50px;
   &:hover, &:focus {
     color: #ccc;
     background-color: #222;
@@ -70,7 +71,7 @@ const SidebarLink = styled(Nav.Link)`
 const Icon = styled(FontAwesomeIcon)`
   margin-right: 10px;
   transition: margin-right 0.3s ease;
-  min-width: 20px; /* Ensure icons have a fixed space */
+  min-width: 20px;
 `;
 
 const LinkText = styled.span`
@@ -98,15 +99,87 @@ const ToggleButton = styled.button`
   justify-content: center;
   position: absolute;
   bottom: 20px;
-  right: ${({ collapsed }) => (collapsed ? '-20px' : '-20px')}; // Ensure it protrudes when collapsed
+  right: ${({ isCollapsed }) => (isCollapsed ? '-20px' : '-20px')};
   transition: right 0.3s;
   &:hover, &:focus {
     color: #ccc;
   }
 `;
 
+const NotificationsModal = styled.div`
+  display: ${({ show }) => (show ? 'block' : 'none')};
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+`;
+
+const ModalDialog = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+`;
+
+const ModalContent = styled.div`
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 1051;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModalHeader = styled.div`
+  background-color: #627254;
+  padding: 20px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ModalTitle = styled.h5`
+  margin: 0;
+`;
+
+const ModalBody = styled.div`
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 20px;
+  background-color: #f1f1f1;
+`;
+
+const Button = styled.button`
+  background: #444;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  padding: 10px 20px;
+  margin-left: 10px;
+  &:hover, &:focus {
+    background: #333;
+  }
+`;
+
 const SideBar = ({ isCollapsed, onToggleCollapse }) => {
     const [showProfile, setShowProfile] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     const navigate = useNavigate();
 
@@ -131,6 +204,9 @@ const SideBar = ({ isCollapsed, onToggleCollapse }) => {
                     <SidebarLink as={NavLink} to="/" activeClassName="active" isCollapsed={isCollapsed}>
                         <Icon icon={faHome} /> <LinkText isCollapsed={isCollapsed}>Strona główna</LinkText>
                     </SidebarLink>
+                    <SidebarLink as={NavLink} to="/map" activeClassName="active" isCollapsed={isCollapsed}>
+                        <Icon icon={faMapMarkedAlt} /> <LinkText isCollapsed={isCollapsed}>Mapa wymian</LinkText>
+                    </SidebarLink>
                     <SidebarLink as={NavLink} to="/exchangeOffers" activeClassName="active" isCollapsed={isCollapsed}>
                         <Icon icon={faExchangeAlt} /> <LinkText isCollapsed={isCollapsed}>Dostępne wymiany</LinkText>
                     </SidebarLink>
@@ -141,7 +217,7 @@ const SideBar = ({ isCollapsed, onToggleCollapse }) => {
                         <Icon icon={faBook} /> <LinkText isCollapsed={isCollapsed}>Baza książek</LinkText>
                     </SidebarLink>
                     <SidebarLink as={NavLink} to="/acceptedExchanges" activeClassName="active" isCollapsed={isCollapsed}>
-                        <Icon icon={faExchangeAlt} /> <LinkText isCollapsed={isCollapsed}>Aktywne wymiany</LinkText>
+                        <Icon icon={faSyncAlt} /> <LinkText isCollapsed={isCollapsed}>Aktywne wymiany</LinkText>
                     </SidebarLink>
                     {isAdminRole() && (
                         <SidebarLink as={NavLink} to="/adminPage" activeClassName="active" isCollapsed={isCollapsed}>
@@ -152,6 +228,9 @@ const SideBar = ({ isCollapsed, onToggleCollapse }) => {
             </div>
 
             <BottomLinks>
+                <SidebarLink onClick={() => setShowNotifications(true)} isCollapsed={isCollapsed}>
+                    <Icon icon={faBell} /> <LinkText isCollapsed={isCollapsed}>Powiadomienia</LinkText>
+                </SidebarLink>
                 <SidebarLink onClick={() => setShowProfile(true)} isCollapsed={isCollapsed}>
                     <Icon icon={faUser} /> <LinkText isCollapsed={isCollapsed}>Profil</LinkText>
                 </SidebarLink>
@@ -162,7 +241,24 @@ const SideBar = ({ isCollapsed, onToggleCollapse }) => {
             <ToggleButton isCollapsed={isCollapsed} onClick={onToggleCollapse}>
                 <Icon icon={isCollapsed ? faAngleRight : faAngleLeft} />
             </ToggleButton>
-            <UserProfile show={showProfile} onHide={() => setShowProfile(false)} />
+
+            <UserProfile show={showProfile} onClose={() => setShowProfile(false)} />
+            <NotificationsModal show={showNotifications}>
+                <ModalDialog>
+                    <ModalContent>
+                        <ModalHeader>
+                            <ModalTitle>Powiadomienia</ModalTitle>
+                            <Button onClick={() => setShowNotifications(false)}>Zamknij</Button>
+                        </ModalHeader>
+                        <ModalBody>
+                            {/* Render your notifications here */}
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button onClick={() => setShowNotifications(false)}>Zamknij</Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </ModalDialog>
+            </NotificationsModal>
         </SidebarContainer>
     );
 };
