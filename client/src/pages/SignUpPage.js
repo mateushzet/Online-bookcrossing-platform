@@ -119,7 +119,7 @@ function SignUpPage() {
                         </>
                     )}
                     <div className="text-center mt-3">
-                        <p>Posiadasz już konto? <a href="/login">Login</a></p>
+                        <p>Posiadasz już konto? <a href="/login">Zaloguj</a></p>
                     </div>
                 </Card.Body>
             </Card>

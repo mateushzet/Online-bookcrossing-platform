@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
 import { NavLink, useNavigate } from 'react-router-dom';
 import isAdminRole from "../utils/IsAdminRole";
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faExchangeAlt, faBook, faBookmark, faUserShield, faUser, faSignOutAlt, faAngleLeft, faAngleRight, faMapMarkedAlt, faSyncAlt, faBell } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faExchangeAlt, faBook, faBookmark, faUserShield, faUser, faSignOutAlt, faAngleLeft, faAngleRight, faMapMarkedAlt, faSyncAlt, faBell, faTrashAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import UserProfile from '../pages/UserProfile';
+import axios from 'axios';
 
 const SidebarContainer = styled.aside`
   width: ${({ isCollapsed }) => (isCollapsed ? '60px' : '250px')};
@@ -21,6 +22,10 @@ const SidebarContainer = styled.aside`
   transition: width 0.3s ease;
   overflow: hidden;
   z-index: 1040;
+  
+  @media (max-width: 768px) {
+    width: ${({ isCollapsed }) => (isCollapsed ? '0' : '100%')};
+  }
 `;
 
 const GreenBar = styled.div`
@@ -45,6 +50,9 @@ const SidebarHeader = styled.div`
   font-weight: 600;
   width: ${({ isCollapsed }) => (isCollapsed ? '80px' : '250px')};
   transition: width 0.3s ease;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const SidebarLink = styled(Nav.Link)`
@@ -66,6 +74,7 @@ const SidebarLink = styled(Nav.Link)`
     color: #ccc;
     background-color: #222;
   }
+  
 `;
 
 const Icon = styled(FontAwesomeIcon)`
@@ -81,6 +90,12 @@ const LinkText = styled.span`
   overflow: hidden;
   white-space: nowrap;
   transition: opacity 0.3s ease, width 0.3s ease;
+  @media (max-width: 768px) {
+    display: ${({ isCollapsed }) => (isCollapsed ? 'none' : 'inline')};
+    width: ${({ isCollapsed }) => (isCollapsed ? '30%' : '100%')};
+    font-size: 1.5em;
+    padding: 30px;
+  }
 `;
 
 const BottomLinks = styled.div`
@@ -103,6 +118,12 @@ const ToggleButton = styled.button`
   transition: right 0.3s;
   &:hover, &:focus {
     color: #ccc;
+  }
+  
+  @media (max-width: 768px) {
+    right: ${({ isCollapsed }) => (isCollapsed ? '320px' : '40px')};
+    z-index: 100;
+    position: fixed;
   }
 `;
 
@@ -177,16 +198,100 @@ const Button = styled.button`
   }
 `;
 
+const NotificationItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: ${({ read }) => (read ? '#e2e2e2' : '#627254')};
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+`;
+
+const NotificationButton = styled(Button)`
+  margin-left: 10px;
+`;
+
+const NotificationIcon = styled(Icon)`
+  margin-right: 10px;
+`;
+
+const NotificationDot = styled.span`
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: ${({ hasUnread }) => (hasUnread ? 'white' : '#333')};
+  border-radius: 50%;
+  margin-left: 10px;
+`;
+
+const NoNotificationsText = styled.p`
+  color: #000;  // Set text color to black
+`;
+
 const SideBar = ({ isCollapsed, onToggleCollapse }) => {
     const [showProfile, setShowProfile] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true); // Default to true
 
     const navigate = useNavigate();
+
+    const fetchNotifications = async () => {
+        try {
+            const response = await axios.get('/api/user/notifications');
+            setNotifications(response.data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    const fetchUserSettings = async () => {
+        try {
+            const userResponse = await axios.get('http://localhost:8080/api/user/getUser');
+            setEmailNotificationsEnabled(userResponse.data.emailNotifications);
+        } catch (error) {
+            console.error('Error fetching user settings:', error);
+        }
+    };
+
+    const markNotificationAsRead = async (notificationId) => {
+        try {
+            await axios.post(`/api/user/notifications/markAsRead/${notificationId}`);
+            setNotifications(notifications.map(notification =>
+                notification.id === notificationId ? { ...notification, read: true } : notification
+            ));
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+    const deleteNotification = async (notificationId) => {
+        try {
+            await axios.delete(`/api/user/notifications/${notificationId}`);
+            setNotifications(notifications.filter(notification => notification.id !== notificationId));
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications(); // Fetch notifications on component mount
+        fetchUserSettings(); // Fetch user settings on component mount
+    }, []);
+
+    useEffect(() => {
+        if (showNotifications) {
+            fetchNotifications();
+        }
+    }, [showNotifications]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login');
     };
+
+    const unreadNotifications = notifications.some(notification => !notification.read);
 
     return (
         <SidebarContainer isCollapsed={isCollapsed}>
@@ -228,8 +333,14 @@ const SideBar = ({ isCollapsed, onToggleCollapse }) => {
             </div>
 
             <BottomLinks>
-                <SidebarLink onClick={() => setShowNotifications(true)} isCollapsed={isCollapsed}>
-                    <Icon icon={faBell} /> <LinkText isCollapsed={isCollapsed}>Powiadomienia</LinkText>
+                <SidebarLink
+                    onClick={() => setShowNotifications(true)}
+                    isCollapsed={isCollapsed}
+                    style={{ color: emailNotificationsEnabled ? '#fff' : '#888' }} // Grey out if notifications are disabled
+                >
+                    <NotificationIcon icon={faBell} />
+                    <LinkText isCollapsed={isCollapsed}>Powiadomienia</LinkText>
+                    {emailNotificationsEnabled && <NotificationDot hasUnread={unreadNotifications} />}
                 </SidebarLink>
                 <SidebarLink onClick={() => setShowProfile(true)} isCollapsed={isCollapsed}>
                     <Icon icon={faUser} /> <LinkText isCollapsed={isCollapsed}>Profil</LinkText>
@@ -248,10 +359,27 @@ const SideBar = ({ isCollapsed, onToggleCollapse }) => {
                     <ModalContent>
                         <ModalHeader>
                             <ModalTitle>Powiadomienia</ModalTitle>
-                            <Button onClick={() => setShowNotifications(false)}>Zamknij</Button>
                         </ModalHeader>
                         <ModalBody>
-                            {/* Render your notifications here */}
+                            {notifications.length === 0 ? (
+                                <NoNotificationsText>Brak powiadomień</NoNotificationsText>
+                            ) : (
+                                notifications.map(notification => (
+                                    <NotificationItem key={notification.id} read={notification.read}>
+                                        <span>{notification.message}</span>
+                                        <div>
+                                            {!notification.read && (
+                                                <NotificationButton onClick={() => markNotificationAsRead(notification.id)}>
+                                                    <FontAwesomeIcon icon={faEye} />
+                                                </NotificationButton>
+                                            )}
+                                            <NotificationButton onClick={() => deleteNotification(notification.id)}>
+                                                <FontAwesomeIcon icon={faTrashAlt} />
+                                            </NotificationButton>
+                                        </div>
+                                    </NotificationItem>
+                                ))
+                            )}
                         </ModalBody>
                         <ModalFooter>
                             <Button onClick={() => setShowNotifications(false)}>Zamknij</Button>

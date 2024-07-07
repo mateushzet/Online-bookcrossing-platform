@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Card, Button, ListGroup, Form, Alert, Modal } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, ListGroup, Form, Alert } from 'react-bootstrap';
 import { Rating } from '@mui/material';
 import axios from "axios";
 import UserProfileAvatarComponent from '../components/UserProfileAvatarComponent';
@@ -18,7 +18,7 @@ const customIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-function UserProfile({ show, onHide }) {
+function UserProfile({ show, onClose }) {
     const [user, setUser] = useState({ username: '', email: '', phone: '', emailNotifications: false, city: '', lat: 52.237049, lng: 19.015615 });
     const [tempLocation, setTempLocation] = useState({ lat: user.lat, lng: user.lng });
     const [tempCity, setTempCity] = useState(user.city);
@@ -149,7 +149,7 @@ function UserProfile({ show, onHide }) {
     };
 
     return (
-        <Modal show={show} onHide={onHide}>
+        <Modal show={show} onHide={onClose}>
             <Modal.Header closeButton>
                 <Modal.Title>Moje Dane</Modal.Title>
             </Modal.Header>
@@ -158,7 +158,7 @@ function UserProfile({ show, onHide }) {
                     <UserProfileAvatarComponent userId={user.userId} key={avatarUpdated} />
                     {editMode && (
                         <Form.Group>
-                            <Form.Label>Change Avatar</Form.Label>
+                            <Form.Label>Zmień zdjęcie profilowe</Form.Label>
                             <Form.Control type="file" accept="image/*" onChange={handleAvatarChange} />
                         </Form.Group>
                     )}
@@ -176,17 +176,18 @@ function UserProfile({ show, onHide }) {
                         />
                     ) : user.email}
                     </ListGroup.Item>
-                    <ListGroup.Item>
+                    {/*     <ListGroup.Item>
                         Telefon: {editMode ? (
                         <Form.Control
-                            type="tel"
-                            name="phone"
-                            placeholder="Add number"
-                            value={user.phone}
-                            onChange={handleInputChange}
+                        type="tel"
+                        name="phone"
+                        placeholder="Add number"
+                        value={user.phone}
+                        onChange={handleInputChange}
                         />
-                    ) : (user.phone || 'Add number')}
-                    </ListGroup.Item>
+                        ) : (user.phone || 'Add number')}
+                        </ListGroup.Item>
+                    */}
                     <ListGroup.Item>
                         Miasto: {editMode ? (
                         <Form.Control
@@ -223,7 +224,7 @@ function UserProfile({ show, onHide }) {
                         </ListGroup.Item>
                     )}
                     <ListGroup.Item>
-                        Wysyłanie powiadomień email: {editMode ? (
+                        Powiadomienia: {editMode ? (
                         <Form.Check
                             type="checkbox"
                             name="emailNotifications"
@@ -246,16 +247,17 @@ function UserProfile({ show, onHide }) {
             <Modal.Footer>
                 {editMode ? (
                     <>
-                        <Button variant="primary" onClick={handleSave}>Save</Button>
+                        <Button variant="primary" onClick={handleSave}>Zapisz</Button>
                         <Button variant="secondary" onClick={() => {
                             setEditMode(false);
                             setTempLocation({ lat: user.lat, lng: user.lng });
                             setTempCity(user.city);
-                        }}>Cancel</Button>
+                        }}>Anuluj</Button>
                     </>
                 ) : (
-                    <Button variant="secondary" onClick={() => setEditMode(true)}>Edit</Button>
+                    <Button variant="secondary" onClick={() => setEditMode(true)}>Edytuj</Button>
                 )}
+                <Button variant="secondary" onClick={onClose}>Zamknij</Button>
             </Modal.Footer>
         </Modal>
     );

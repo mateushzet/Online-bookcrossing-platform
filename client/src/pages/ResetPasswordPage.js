@@ -18,17 +18,17 @@ function ResetPasswordPage() {
     const handleResetPassword = async () => {
         try {
             if (!password || !confirmPassword) {
-                setError('Please enter all required fields.');
+                setError('Proszę wpisać wszystkie wymagane pola.');
                 return;
             }
 
             if (password !== confirmPassword) {
-                setError('Passwords do not match.');
+                setError('Hasła nie pasują do siebie.');
                 return;
             }
 
             if (password.length < 8 || !/\d/.test(password) || !/[!@#$%^&*]/.test(password)) {
-                setError("Password must be at least 8 characters long and include numbers and special characters.");
+                setError("Hasło musi mieć co najmniej 8 znaków i zawierać cyfry oraz znaki specjalne.");
                 return;
             }
 
@@ -36,7 +36,7 @@ function ResetPasswordPage() {
             const token = queryParams.get('token');
 
             if (!token) {
-                setError('No token provided. Make sure you are using a valid password reset link.');
+                setError('Brak tokenu uwierzytelniającego. Upewnij się, że używasz prawidłowego łącza do resetowania hasła.');
                 return;
             }
 
@@ -48,10 +48,10 @@ function ResetPasswordPage() {
             });
 
             console.log('Password reset successful:', response.data);
-            setMessage('Your password has been reset successfully.');
+            setMessage('Twoje hasło zostało pomyślnie zresetowane.');
         } catch (error) {
             console.error('Password reset failed:', error.response ? error.response.data : error.message);
-            setError('Failed to reset password. Token may be invalid or expired.');
+            setError('Nie udało się zresetować hasła. Token może być nieprawidłowy lub wygasł.');
         }
     };
 
@@ -63,12 +63,12 @@ function ResetPasswordPage() {
         <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
             <Card style={{ width: '22rem' }}>
                 <Card.Body>
-                    <Card.Title className="text-center mb-4">Reset Password</Card.Title>
+                    <Card.Title className="text-center mb-4">Zresetuj hasło</Card.Title>
                     {message && <Alert variant="success">{message}</Alert>}
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form>
                         <Form.Group className="mb-3" controlId="newPassword">
-                            <Form.Label>New Password</Form.Label>
+                            <Form.Label>Nowe hasło</Form.Label>
                             <Form.Control
                                 type="password"
                                 placeholder="Enter new password"
@@ -77,7 +77,7 @@ function ResetPasswordPage() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="confirmPassword">
-                            <Form.Label>Confirm New Password</Form.Label>
+                            <Form.Label>Potwierdź nowe hasło</Form.Label>
                             <Form.Control
                                 type="password"
                                 placeholder="Confirm new password"
@@ -86,10 +86,10 @@ function ResetPasswordPage() {
                             />
                         </Form.Group>
                         <Button variant="primary" type="button" onClick={handleResetPassword} className="w-100 mb-2">
-                            Reset Password
+                            Zresetuj hasło
                         </Button>
                         <Button variant="secondary" type="button" onClick={handleBackToLogin} className="w-100">
-                            Back to Login
+                            Powrót do logowania
                         </Button>
                     </Form>
                 </Card.Body>

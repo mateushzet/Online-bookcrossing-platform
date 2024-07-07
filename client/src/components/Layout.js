@@ -21,6 +21,10 @@ const ContentContainer = styled.main`
   display: flex;
   justify-content: center;
   align-items: center;
+   @media (max-width: 768px) {
+    ${({ isSidebarCollapsed }) => isSidebarCollapsed ? 'margin-left: 0px;' : 'margin-left: 250px;'}
+    padding: 0px;
+  }
 `;
 
 const Layout = ({ children }) => {

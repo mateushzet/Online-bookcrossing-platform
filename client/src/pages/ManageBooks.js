@@ -529,8 +529,8 @@ function ManageBooks() {
                             {filteredBooks.slice((currentPage-1) * booksPerPage, currentPage * booksPerPage).map((book) => (
                                 <tr key={book.bookId}>
                                     <td>
-                                        <Button variant="outline-primary" onClick={() => modifyBook(book)}>Modify</Button>
-                                        <Button variant="outline-danger" onClick={() => deleteBook(book.bookId)}>Delete</Button>
+                                        <Button variant="outline-primary" onClick={() => modifyBook(book)}>Modyfikuj</Button>
+                                        <Button variant="outline-danger" onClick={() => deleteBook(book.bookId)}>Usuń</Button>
                                     </td>
                                     <td>
                                         <FormControl
@@ -636,9 +636,9 @@ function ManageBooks() {
                         {statusMessage && <Alert>{statusMessage}</Alert>}
                     </TableContainer>
                     <PaginationContainer>
-                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Previous</PaginationButton>
+                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Poprzednia</PaginationButton>
                         {renderPaginationItems(currentPage, totalPages)}
-                        <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>Next</PaginationButton>
+                        <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>Następna</PaginationButton>
                     </PaginationContainer>
                 </>
             )}

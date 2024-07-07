@@ -19,6 +19,9 @@ const StyledContainer = styled.div`
   background-color: #eef2f7;
   border-radius: 1rem;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  @media (max-width: 768px) {
+     width: 100%;
+  }
 `;
 
 const OffersContainer = styled.div`
@@ -45,6 +48,10 @@ const StyledCard = styled.div`
     transform: scale(1.02);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
+  
+   @media (max-width: 768px) {
+    margin: 0;
+  }
 `;
 
 const LeftColumn = styled.div`
@@ -52,6 +59,9 @@ const LeftColumn = styled.div`
   flex-direction: column;
   justify-content: center;
   width: 70%;
+    @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const RightColumn = styled.div`
@@ -59,12 +69,19 @@ const RightColumn = styled.div`
   flex-direction: column;
   align-items: center;
   width: 30%;
+   @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const CardTitle = styled.h5`
   color: #333;
   margin-bottom: 15px;
   font-size: 1.25em;
+  @media (max-width: 768px) {
+     margin-bottom: 3px;
+     font-size: 0.9em;
+  }
 `;
 
 const CardText = styled.p`
@@ -73,6 +90,10 @@ const CardText = styled.p`
   font-size: 1em;
   word-wrap: break-word;
   white-space: pre-wrap;
+  @media (max-width: 768px) {
+     margin-bottom: 3px;
+     font-size: 0.9em;
+  }
 `;
 
 const ButtonContainer = styled.div`
@@ -95,6 +116,10 @@ const AcceptButton = styled.button`
   &:hover {
     background-color: #41542b;
   }
+  
+    @media (max-width: 768px) {
+    font-size: 0.7em;
+  }
 `;
 
 const DetailsButton = styled.button`
@@ -110,6 +135,10 @@ const DetailsButton = styled.button`
   &:hover {
     background-color: #357ab8;
   }
+  
+  @media (max-width: 768px) {
+    font-size: 0.7em;
+  }
 `;
 
 const Header = styled.div`
@@ -119,6 +148,9 @@ const Header = styled.div`
   color: #fff;
   text-align: center;
   border-radius: 1rem 1rem 0 0;
+  @media (max-width: 768px) {
+    border-radius: 0;
+  }
 `;
 
 const HeaderTitle = styled.h1`
@@ -130,6 +162,10 @@ const ImagePreview = styled.img`
   height: 250px;
   cursor: pointer;
   margin-bottom: 10px;
+  @media (max-width: 768px) {
+     width: 150px;
+     height: 150px;
+  }
 `;
 
 const FullSizeImageModal = styled.div`
@@ -179,6 +215,7 @@ const ExchangeOffers = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [authorQuery, setAuthorQuery] = useState('');
     const [exchangeDescriptionQuery, setExchangeDescriptionQuery] = useState('');
+    const [preferredBooksQuery, setPreferredBooksQuery] = useState('');
     const [bookConditionFilter, setBookConditionFilter] = useState('');
     const [genreFilter, setGenreFilter] = useState('');
     const [filteredOffers, setFilteredOffers] = useState([]);
@@ -246,18 +283,23 @@ const ExchangeOffers = () => {
 
     useEffect(() => {
         recalculateDistances();
-    }, [searchQuery, authorQuery, exchangeDescriptionQuery, bookConditionFilter, genreFilter, offers, maxDistance, tempLocation]);
+    }, [searchQuery, authorQuery, exchangeDescriptionQuery, preferredBooksQuery, bookConditionFilter, genreFilter, offers, maxDistance, tempLocation]);
 
     const recalculateDistances = () => {
         const lowercasedSearchQuery = searchQuery ? searchQuery.toLowerCase() : '';
         const lowercasedAuthorQuery = authorQuery ? authorQuery.toLowerCase() : '';
         const lowercasedExchangeDescriptionQuery = exchangeDescriptionQuery ? exchangeDescriptionQuery.toLowerCase() : '';
+        const lowercasedPreferredBooksQuery = preferredBooksQuery ? preferredBooksQuery.toLowerCase() : '';
 
         const filtered = offers.filter(offer => {
             const matchesFilters =
                 (offer.title ? offer.title.toLowerCase().includes(lowercasedSearchQuery) : true) &&
                 (offer.author ? offer.author.toLowerCase().includes(lowercasedAuthorQuery) : true) &&
                 (offer.exchangeDescription ? offer.exchangeDescription.toLowerCase().includes(lowercasedExchangeDescriptionQuery) : true) &&
+                (
+                    offer.preferredBooksDescription.toLowerCase().includes(lowercasedPreferredBooksQuery) ||
+                    offer.preferredBooksList.some(book => book.title.toLowerCase().includes(lowercasedPreferredBooksQuery))
+                ) &&
                 (bookConditionFilter === '' || offer.bookCondition === bookConditionFilter) &&
                 (genreFilter === '' || offer.genre === genreFilter);
 
@@ -369,6 +411,7 @@ const ExchangeOffers = () => {
         setSearchQuery('');
         setAuthorQuery('');
         setExchangeDescriptionQuery('');
+        setPreferredBooksQuery('');
         setBookConditionFilter('');
         setGenreFilter('');
         setMaxDistance(null);
@@ -386,12 +429,14 @@ const ExchangeOffers = () => {
                 searchQuery={searchQuery}
                 authorQuery={authorQuery}
                 exchangeDescriptionQuery={exchangeDescriptionQuery}
+                preferredBooksQuery={preferredBooksQuery}
                 bookConditionFilter={bookConditionFilter}
                 genreFilter={genreFilter}
                 cityInput={cityInput}
                 setSearchQuery={setSearchQuery}
                 setAuthorQuery={setAuthorQuery}
                 setExchangeDescriptionQuery={setExchangeDescriptionQuery}
+                setPreferredBooksQuery={setPreferredBooksQuery}
                 setBookConditionFilter={setBookConditionFilter}
                 setGenreFilter={setGenreFilter}
                 handleCityInputChange={handleCityInputChange}
@@ -414,8 +459,8 @@ const ExchangeOffers = () => {
                             <CardText as="h6">{offer.author}</CardText>
                             <CardText>{offer.genre}</CardText>
                             <CardText><strong>Stan książki:</strong> {offer.bookCondition}</CardText>
-                            <CardText><strong>Preferowane książki:</strong> {offer.preferredBooksDescription}</CardText>
                             <CardText><strong>Opis wymiany:</strong> {offer.exchangeDescription}</CardText>
+                            <CardText><strong>Preferowane książki:</strong> {offer.preferredBooksDescription}</CardText>
                             <div>
                                 {offer.preferredBooksList.map((book, index) => (
                                     <Hashtag key={index} onClick={() => handleViewPreferredBookDetails(book)}>{book.title}</Hashtag>

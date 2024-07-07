@@ -24,11 +24,6 @@ public class AdminController {
         this.userBookService = userBookService;
     }
 
-    @GetMapping("/usersTable")
-    public List<UserDTO> getUsers() {
-        return userService.getAllUsers();
-    }
-
     @DeleteMapping("/deleteUser")
     public ResponseEntity<?> deleteUser(@RequestParam int userId)  {
         try {
@@ -38,6 +33,12 @@ public class AdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/usersTable")
+    public List<UserDTO> getUsers() {
+        return userService.getAllUsers();
+    }
+
 
     @PutMapping("/modifyUser")
     public ResponseEntity<?> modifyUser(@RequestBody UserDTO userDTO) {

@@ -73,13 +73,10 @@ function AdminPage() {
                 </CardHeader>
                 <CardBody>
                     <Button onClick={handleManageUsers}>
-                        Manage Users
+                        Zarządzanie użytkownikami
                     </Button>
                     <Button onClick={handleManageBooks}>
-                        Manage Books
-                    </Button>
-                    <Button onClick={handleSettings}>
-                        Settings
+                        Zarządzanie książkami
                     </Button>
                 </CardBody>
             </Card>

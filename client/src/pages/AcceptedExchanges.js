@@ -175,7 +175,11 @@ const Messages = ({
                     </UserSelect>
                     <MessagesList>
                         {messages.map((msg, index) => (
-                            <MessageItem key={index} isStageChange={isStageChangeMessage(msg)}>
+                            <MessageItem
+                                key={index}
+                                isStageChange={isStageChangeMessage(msg)}
+                                isCurrentUser={msg.senderId === selectedUser}
+                            >
                                 <MessageContent>{msg.content}</MessageContent>
                                 <MessageMeta>
                                     Użytkownik: {msg.senderUsername}, wysłano: {msg.timestamp ? new Date(msg.timestamp).toLocaleString() : "just now"}
@@ -633,6 +637,10 @@ const LeftPane = styled.div`
   align-items: center;
   transition: width 0.3s ease;
   position: relative;
+  @media (max-width: 768px) {
+    width: ${({ isCollapsed }) => (isCollapsed ? '0%' : '100%')};
+    overflow-y: ${({ isCollapsed }) => (isCollapsed ? 'hidden' : 'visible')};
+  }
 `;
 
 const MiddlePane = styled.div`
@@ -644,6 +652,10 @@ const MiddlePane = styled.div`
   position: relative;
   transition: width 0.3s ease;
   padding: 20px;
+  @media (max-width: 768px) {
+    width: 50%;
+    padding: 0px;
+  }
 `;
 
 const RightPane = styled.div`
@@ -655,6 +667,9 @@ const RightPane = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  @media (max-width: 768px) {
+    width: 50%;
+  }
 `;
 
 const ToggleButtonContainer = styled.div`
@@ -663,6 +678,9 @@ const ToggleButtonContainer = styled.div`
   gap: 10px;
   height: 10%;
   margin: auto;
+  @media (max-width: 768px) {
+    gap: 0px;
+  }
 `;
 
 const StyledButton = styled.button`
@@ -691,6 +709,10 @@ const StyledButton = styled.button`
 const ToggleButtonStyled = styled(ToggleButton)`
   && {
     width: 100%;
+  }
+  
+  @media (max-width: 768px) {
+    width: 10%;
   }
 `;
 
@@ -726,6 +748,9 @@ const CardBody = styled.div`
   padding: 20px;
   height: 100%;
   width: 100%;
+  @media (max-width: 768px) {
+    padding: 2px;
+  }
 `;
 
 const CardTitle = styled.h5`
@@ -734,6 +759,9 @@ const CardTitle = styled.h5`
   font-size: 1.25em;
   text-align: center;
   word-wrap: break-word;
+  @media (max-width: 768px) {
+    font-size: 0.8em;
+  }
 `;
 
 const CardText = styled.p`
@@ -743,6 +771,10 @@ const CardText = styled.p`
   font-size: 1em;
   width: 100%;
   word-wrap: break-word;
+  @media (max-width: 768px) {
+    font-size: 0.7em;
+    margin-bottom: 3px;
+  }
 `;
 
 const NoOffersMessage = styled.div`
@@ -777,6 +809,10 @@ const MessagesContainer = styled.div`
   border: 1px solid #ddd;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  @media (max-width: 768px) {
+    padding: 3px;
+  }
+ 
 `;
 
 const MessagesList = styled.div`
@@ -790,7 +826,8 @@ const MessagesList = styled.div`
 const MessageItem = styled.div`
   padding: 10px;
   border-bottom: 1px solid #ddd;
-  background-color: ${({ isStageChange }) => (isStageChange ? '#f0f0f0' : 'transparent')};
+  background-color: ${({ isStageChange, isCurrentUser }) =>
+    isStageChange ? '#f6f6f6' : (isCurrentUser ? 'rgba(154,180,165,0.27)' : '#ffffff')};
   &:last-child {
     border-bottom: none;
   }
@@ -811,6 +848,9 @@ const MessageInputContainer = styled.div`
   display: flex;
   align-items: center;
   margin-top: 10px;
+   @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const MessageInput = styled.input`
@@ -819,6 +859,10 @@ const MessageInput = styled.input`
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-right: 10px;
+  @media (max-width: 768px) {
+    height: 100%;
+    font-size: 0.7em;
+  }
 `;
 
 const SendButton = styled.button`
@@ -908,6 +952,10 @@ const ImagePreview = styled.img`
   height: 150px;
   cursor: pointer;
   margin-bottom: 10px;
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 100px;
+  }
 `;
 
 const ModalWrapper = styled.div`

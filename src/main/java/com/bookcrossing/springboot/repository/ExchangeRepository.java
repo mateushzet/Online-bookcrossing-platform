@@ -1,6 +1,7 @@
 package com.bookcrossing.springboot.repository;
 
 import com.bookcrossing.springboot.dto.CombinedBookExchangeDTO;
+import com.bookcrossing.springboot.dto.MatchingExchangeDTO;
 import com.bookcrossing.springboot.model.Exchange;
 import com.bookcrossing.springboot.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,30 +45,13 @@ public interface ExchangeRepository extends JpaRepository<Exchange, Long> {
     @Query("DELETE FROM Exchange e WHERE e.exchangeId = :exchangeId AND e.ownerId = :ownerId")
     void deleteByExchangeIdAndOwnerId(@Param("exchangeId") int exchangeId, @Param("ownerId") int ownerId);
 
-    @Query(value = "SELECT e2.exchangeId AS matching_exchange_id, b2.title AS matching_title, b2.author AS matching_author, e2.book_condition AS matching_condition, b2.genre AS matching_genre, e2.owner_id AS matching_owner_id, u2.username AS matching_owner_username, e1.exchange_id AS original_exchange_id, b1.title AS original_title, b1.author AS original_author, e1.book_condition AS original_condition, b1.genre AS original_genre, e1.owner_id AS original_owner_id, u1.username AS original_owner_username " +
-            "FROM Exchange e1 " +
-            "JOIN Books b1 ON e1.book_id = b1.book_id " +
-            "JOIN Exchange e2 ON e1.exchange_id != e2.exchange_id " +
-            "JOIN Books b2 ON e2.book_id = b2.book_id " +
-            "JOIN Users u1 ON e1.owner_id = u1.user_id " +
-            "JOIN Users u2 ON e2.owner_id = u2.user_id " +
-            "WHERE e2.owner_id != e1.owner_id " +
-            "AND e1.exchange_id = :exchangeId " +
-            "AND e1.book_id = ANY (string_to_array(e2.preferred_books, ',')::int[])",
-            nativeQuery = true)
-    List<Object[]> findMatchingExchanges(@Param("exchangeId") Long exchangeId);
+    @Query("SELECT e.exchangeId, e.bookId, e.ownerId, e.bookCondition, e.preferredBooks, e.bookImage FROM Exchange e WHERE e.exchangeId = :exchangeId")
+    List<Object[]> findExchangeDetails(@Param("exchangeId") Long exchangeId);
 
-    @Query(value = "SELECT e2.exchange_id AS matching_exchange_id, b2.title AS matching_title, b2.author AS matching_author, e2.book_condition AS matching_condition, b2.genre AS matching_genre, e2.owner_id AS matching_owner_id, u2.username AS matching_owner_username, e1.exchange_id AS original_exchange_id, b1.title AS original_title, b1.author AS original_author, e1.book_condition AS original_condition, b1.genre AS original_genre, e1.owner_id AS original_owner_id, u1.username AS original_owner_username " +
-            "FROM exchange e1 " +
-            "JOIN books b1 ON e1.book_id = b1.book_id " +
-            "JOIN exchange e2 ON e1.exchange_id != e2.exchange_id " +
-            "JOIN books b2 ON e2.book_id = b2.book_id " +
-            "JOIN users u1 ON e1.owner_id = u1.user_id " +
-            "JOIN users u2 ON e2.owner_id = u2.user_id " +
-            "WHERE e2.owner_id != e1.owner_id " +
-            "AND e1.exchange_id = :exchangeId " +
-            "AND e2.book_id = ANY (string_to_array(e1.preferred_books, ',')::int[])",
-            nativeQuery = true)
-    List<Object[]> findReverseMatchingExchanges(@Param("exchangeId") Long exchangeId);
+    @Query("SELECT e.exchangeId, e.bookId, e.ownerId, e.bookCondition, u.username, b.title, b.author, b.genre, u.username, e.preferredBooks FROM Exchange e JOIN e.book b JOIN e.user u")
+    List<Object[]> findAllExchangeDetails();
+
+    @Query("SELECT e.exchangeId, e.bookId, e.ownerId, e.bookCondition, e.preferredBooks, e.bookImage, b.title FROM Exchange e JOIN e.book b WHERE e.exchangeId = :exchangeId")
+    List<Object[]> findExchangeDetailsExtended(@Param("exchangeId") Long exchangeId);
 
 }

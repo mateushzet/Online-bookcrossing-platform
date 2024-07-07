@@ -23,25 +23,25 @@ function ForgotPassword() {
         <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
             <Card style={{ width: '22rem' }}>
                 <Card.Body>
-                    <Card.Title className="text-center mb-4">Forgot Password</Card.Title>
+                    <Card.Title className="text-center mb-4">Resetowanie hasła</Card.Title>
                     {message && <Alert variant="success">{message}</Alert>}
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form>
                         <Form.Group className="mb-3" controlId="email">
-                            <Form.Label>Email address</Form.Label>
+                            <Form.Label>Adres e-mail</Form.Label>
                             <Form.Control
                                 type="email"
-                                placeholder="Enter email"
+                                placeholder="Wprowadź e-mail"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </Form.Group>
                         <Button variant="primary" type="button" onClick={handleForgotPassword} className="w-100">
-                            Send Reset Link
+                            Wyślij link resetujący
                         </Button>
                     </Form>
                     <div className="mt-3 text-center">
-                        <p>Remembered your password? <a href="/login">Login</a></p>
+                        <p>Pamiętasz swoje hasło? <a href="/login">Zaloguj sie</a></p>
                     </div>
                 </Card.Body>
             </Card>

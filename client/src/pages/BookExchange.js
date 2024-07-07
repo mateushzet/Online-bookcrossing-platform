@@ -35,6 +35,9 @@ const CardBody = styled.div`
   flex-wrap: wrap;
   gap: 20px;
   width: 100%;
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const CardBodyColumn = styled.div`
@@ -192,6 +195,9 @@ const ModalFooter = styled.div`
   align-items: center;
   padding: 20px;
   background-color: #f1f1f1;
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const ButtonContainer = styled.div`
@@ -300,6 +306,9 @@ const CaptchaAndButton = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-top: 20px;
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 function BookExchange() {
@@ -438,15 +447,15 @@ function BookExchange() {
 
             reader.readAsDataURL(file);
         } else if (name.startsWith('selected')) {
-            setSelectedBook(prev => ({ ...prev, [name]: value.trim() }));
+            setSelectedBook(prev => ({ ...prev, [name]: value }));  // Remove .trim() here
         } else if (name === 'exchangeDescription') {
-            setSelectedBook(prev => ({ ...prev, exchangeDescription: value }));
+            setSelectedBook(prev => ({ ...prev, exchangeDescription: value }));  // Remove .trim() here
         } else if (name === 'preferredBooksDescription') {
-            setSelectedBook(prev => ({ ...prev, preferredBooksDescription: value }));
+            setSelectedBook(prev => ({ ...prev, preferredBooksDescription: value }));  // Remove .trim() here
         } else {
-            setFormData(prev => ({ ...prev, [name]: value.trim() }));
+            setFormData(prev => ({ ...prev, [name]: value }));  // Remove .trim() here
             if (['bookTitle', 'authorName', 'isbn', 'genre'].includes(name)) {
-                const newFormData = { ...formData, [name]: value.trim() };
+                const newFormData = { ...formData, [name]: value };
                 fetchBooks(newFormData.bookTitle, newFormData.authorName, newFormData.isbn, newFormData.genre);
             }
         }

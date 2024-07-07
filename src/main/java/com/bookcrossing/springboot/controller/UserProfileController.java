@@ -120,5 +120,4 @@ public class UserProfileController {
             return new ResponseEntity<>("Failed to upload avatar.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }

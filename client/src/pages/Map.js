@@ -56,7 +56,11 @@ const Map = () => {
                     .bindPopup(`
                         <h5>${offer.title}</h5>
                         <p>${offer.author}</p>
-                        <button onclick="window.location.href='/exchangeOffers?title=${encodeURIComponent(offer.title)}&author=${encodeURIComponent(offer.author)}&genre=${encodeURIComponent(offer.genre)}&lat=${offer.lat}&lng=${offer.lng}&city=${encodeURIComponent(offer.city || '')}'">Zobacz oferty</button>
+                        <button onclick="window.location.href='/exchangeOffers?title=${encodeURIComponent(offer.title)}' +
+                         '&author=${encodeURIComponent(offer.author)}' +
+                         '&genre=${encodeURIComponent(offer.genre)}' +
+                         '&lat=${offer.lat}&lng=${offer.lng}' +
+                         '&city=${encodeURIComponent(offer.city || '')}'">Zobacz oferty</button>
                     `);
                 markers.addLayer(marker);
             });

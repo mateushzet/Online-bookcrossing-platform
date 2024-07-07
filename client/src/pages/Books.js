@@ -504,9 +504,9 @@ function Books() {
                         </Table>
                     </TableContainer>
                     <PaginationContainer>
-                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Previous</PaginationButton>
+                        <PaginationButton onClick={prevPage} disabled={currentPage === 1}>Poprzednia</PaginationButton>
                         {renderPaginationItems()}
-                        <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>Next</PaginationButton>
+                        <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>Następna</PaginationButton>
                     </PaginationContainer>
                 </>
             )}

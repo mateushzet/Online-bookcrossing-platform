@@ -141,7 +141,7 @@ const Select = styled.select`
 function ManageUsers() {
     const [users, setUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [usersPerPage] = useState(5);
+    const [usersPerPage] = useState(6);
     const [isLoading, setIsLoading] = useState(true);
     const [statusMessage, setStatusMessage] = useState('');
 
@@ -221,7 +221,7 @@ function ManageUsers() {
 
     const renderPaginationItems = (currentPage, totalPages) => {
         let items = [];
-        const pageLimit = 5;
+        const pageLimit = 10;
         let startPage = currentPage - Math.floor(pageLimit / 2);
         let endPage = currentPage + Math.floor(pageLimit / 2);
 

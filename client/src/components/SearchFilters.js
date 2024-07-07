@@ -96,12 +96,14 @@ const SearchFilters = ({
                            searchQuery,
                            authorQuery,
                            exchangeDescriptionQuery,
+                           preferredBooksQuery,  // <-- Nowe pole
                            bookConditionFilter,
                            genreFilter,
                            cityInput,
                            setSearchQuery,
                            setAuthorQuery,
                            setExchangeDescriptionQuery,
+                           setPreferredBooksQuery,  // <-- Nowe pole
                            setBookConditionFilter,
                            setGenreFilter,
                            handleCityInputChange,
@@ -155,6 +157,17 @@ const SearchFilters = ({
                         />
                     </div>
                     <div>
+                        <Label htmlFor="preferredBooksQuery">Preferowane książki</Label>
+                        <Input
+                            id="preferredBooksQuery"
+                            type="text"
+                            value={preferredBooksQuery}
+                            onChange={(e) => setPreferredBooksQuery(e.target.value)}
+                        />
+                    </div>
+                </FilterRow>
+                <FilterRow>
+                    <div>
                         <Label htmlFor="bookConditionFilter">Stan książki</Label>
                         <Select
                             id="bookConditionFilter"
@@ -169,8 +182,6 @@ const SearchFilters = ({
                             ))}
                         </Select>
                     </div>
-                </FilterRow>
-                <FilterRow>
                     <div>
                         <Label htmlFor="genreFilter">Gatunek</Label>
                         <Select
@@ -186,6 +197,8 @@ const SearchFilters = ({
                             ))}
                         </Select>
                     </div>
+                </FilterRow>
+                <FilterRow>
                     <div>
                         <Label htmlFor="cityInput">Miejscowość</Label>
                         <Input
@@ -201,8 +214,6 @@ const SearchFilters = ({
                             ))}
                         </datalist>
                     </div>
-                </FilterRow>
-                <FilterRow>
                     <div>
                         <Label htmlFor="maxDistance">Maksymalna odległość</Label>
                         <Select
